@@ -1,0 +1,44 @@
+csp:
+  n_components: 6
+  reg: 0.1
+  eps: 1.0e-6
+  log: true
+
+lda:
+  solver: "lsqr"
+  shrinkage: "auto"
+
+alignment:
+  eps: 1.0e-6
+
+ra:
+  metric: "riemann"
+
+dca_bgf:
+  base_alignment: "ra"
+  context_dim: 3
+  context:
+    features: ["d_src", "d_tgt", "sigma_recent"]
+    ema_alpha: 0.1
+    recent_window: 5
+    normalize: true
+    cov_eps: 1.0e-6
+  conditional:
+    type: "linear"
+    weights: [1.2, 0.6, 0.3]
+    bias: 0.0
+    temperature: 1.0
+    ema_smooth_alpha: 0.2
+  feedback:
+    enabled: true
+    window_size: 10
+    entropy_high_factor: 0.8
+    entropy_low_factor: 0.3
+    conf_trend_threshold: -0.05
+    alpha: 0.1
+    beta: 0.05
+    conf_trend_alpha: 0.15
+    momentum: 0.7
+    delta_w_max: 0.2
+    update_every: 1
+    conflict_mode: "sum"

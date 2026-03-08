@@ -1,0 +1,13 @@
+experiment:
+  name: "stage1_baselines"
+  seed: 42
+
+evaluation:
+  metrics:
+    - "accuracy"
+    - "kappa"
+    - "f1_macro"
+
+logging:
+  level: "INFO"
+  save_dir: "results/logs"

@@ -1,0 +1,22 @@
+{
+  "dynamic": {
+    "accuracy_mean": 0.4147376543209877,
+    "accuracy_std": 0.13334317897033562,
+    "w_mean": 0.5332590409596987,
+    "w_std_mean": 0.005593826913095516
+  },
+  "fixed": {
+    "fixed_w=0.0": {
+      "accuracy_mean": 0.3804012345679012,
+      "accuracy_std": 0.1179420296560833
+    },
+    "fixed_w=0.5": {
+      "accuracy_mean": 0.41010802469135804,
+      "accuracy_std": 0.13521000572814676
+    },
+    "fixed_w=1.0": {
+      "accuracy_mean": 0.4340277777777778,
+      "accuracy_std": 0.14059284611824896
+    }
+  }
+}

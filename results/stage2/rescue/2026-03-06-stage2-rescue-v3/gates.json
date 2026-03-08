@@ -1,0 +1,14 @@
+{
+  "gate1": {
+    "status": "PASS",
+    "detail": "固定 w=1.0 是否持续压过当前 adaptive，用于判断是否切到保守 gating 主线。"
+  },
+  "gate2": {
+    "status": "FAIL",
+    "detail": "best adaptive 是否已经平均优于 RA 且被试胜场数增加。"
+  },
+  "gate3": {
+    "status": "FAIL",
+    "detail": "是否满足 3-5% 提升、至少 5/9 被试获益、统计方向支持与开销可解释。"
+  }
+}

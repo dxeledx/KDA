@@ -1,0 +1,38 @@
+{
+  "dynamic_exp_b1": {
+    "accuracy_mean": 0.40740740740740744,
+    "accuracy_std": 0.1452327248497526,
+    "w_mean": 0.5413047168566327,
+    "w_std_mean": 0.08811950356290355
+  },
+  "fixed": {
+    "fixed_w=0.0": {
+      "accuracy_mean": 0.3804012345679012,
+      "accuracy_std": 0.1179420296560833
+    },
+    "fixed_w=0.5": {
+      "accuracy_mean": 0.41010802469135804,
+      "accuracy_std": 0.13521000572814676
+    },
+    "fixed_w=1.0": {
+      "accuracy_mean": 0.4340277777777778,
+      "accuracy_std": 0.14059284611824896
+    }
+  },
+  "vs_exp_a": {
+    "accuracy_mean_delta": -0.007330246913580273,
+    "kappa_mean_delta": -0.009773662551440318,
+    "f1_macro_mean_delta": -0.01251165139552968,
+    "w_std_mean_delta": 0.08252567664980807,
+    "wins_vs_exp_a": 2,
+    "losses_vs_exp_a": 7
+  },
+  "vs_exp_b": {
+    "accuracy_mean_delta": -0.00617283950617283,
+    "kappa_mean_delta": -0.008230452674897085,
+    "f1_macro_mean_delta": -0.013536599545196846,
+    "w_std_mean_delta": 0.08241775343532015,
+    "wins_vs_exp_b": 4,
+    "losses_vs_exp_b": 5
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "stage": "feedback_stability_scan",
+  "candidate": "adaptive/feedback=sum",
+  "accuracy_mean": 0.4212962962962963,
+  "accuracy_std": 0.12870661800590721,
+  "delta_vs_ra": -0.006172839506172845,
+  "wins": 2,
+  "losses": 5,
+  "draws": 2,
+  "p_value": 0.23588521058805278,
+  "effect_size": -0.37114080034091806,
+  "delta_ci_low": -0.01620370370370372,
+  "delta_ci_high": 0.00424382716049383,
+  "elapsed_sec": 59.053911729715765,
+  "overrides_json": "{\"conditional\": {\"bias\": 1.0, \"ema_smooth_alpha\": 0.0, \"temperature\": 1.0, \"weights\": [1.2, 0.6, 0.3, 1.2]}, \"context\": {\"cov_eps\": 1e-06, \"features\": [\"d_src\", \"d_tgt\", \"sigma_recent\", \"d_geo\"]}}"
+}

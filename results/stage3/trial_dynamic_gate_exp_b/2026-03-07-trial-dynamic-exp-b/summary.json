@@ -1,0 +1,30 @@
+{
+  "dynamic_exp_b": {
+    "accuracy_mean": 0.4135802469135802,
+    "accuracy_std": 0.13889371133603148,
+    "w_mean": 0.5915955929252097,
+    "w_std_mean": 0.005701750127583452
+  },
+  "fixed": {
+    "fixed_w=0.0": {
+      "accuracy_mean": 0.3804012345679012,
+      "accuracy_std": 0.1179420296560833
+    },
+    "fixed_w=0.5": {
+      "accuracy_mean": 0.41010802469135804,
+      "accuracy_std": 0.13521000572814676
+    },
+    "fixed_w=1.0": {
+      "accuracy_mean": 0.4340277777777778,
+      "accuracy_std": 0.14059284611824896
+    }
+  },
+  "vs_exp_a": {
+    "accuracy_mean_delta": -0.0011574074074074373,
+    "kappa_mean_delta": -0.0015432098765432228,
+    "f1_macro_mean_delta": 0.0010249481496671837,
+    "w_std_mean_delta": 0.00010792321448798566,
+    "wins_vs_exp_a": 3,
+    "losses_vs_exp_a": 4
+  }
+}

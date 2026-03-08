@@ -1,0 +1,28 @@
+{
+  "run_name": "2026-03-07-kcar-diagnostic",
+  "window_size": 32,
+  "pca_rank": 16,
+  "ridge_alpha": 0.001,
+  "targets": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "mean_auroc": 0.6876543209876543,
+  "mean_auprc": 0.7201014109347442,
+  "mean_spearman": 0.2727217217232459,
+  "subject_wins_vs_heuristics": {
+    "d_src": 6,
+    "d_tgt": 5,
+    "sigma_recent": 6,
+    "entropy": 7,
+    "conf_max": 7
+  },
+  "eligible_window_count": 68
+}

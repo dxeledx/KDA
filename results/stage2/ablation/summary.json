@@ -1,0 +1,12 @@
+{
+  "methods": [
+    "conditional_only",
+    "dca_bgf(full)",
+    "feedback_only(w=0.5)",
+    "w=0.0",
+    "w=0.5",
+    "w=1.0"
+  ],
+  "accuracy_mean": 0.40920781893004116,
+  "accuracy_std": 0.12141149611991091
+}

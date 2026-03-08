@@ -1,0 +1,5 @@
+local_root = "/Users/jason/workspace/code/workspace/Reserch_experiment/DCA-BGF"
+
+[remote]
+lab_root = "/home/wjx/workspace/code/workspace/Reserch_experiment/DCA-BGF"
+
