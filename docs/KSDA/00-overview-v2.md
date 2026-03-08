@@ -8,6 +8,7 @@
 > 本文档的 `D.1 / D.1+` 现已冻结为旧 Phase 1 参考。  
 > 当前真正执行的新主线已经切换为：`D0 → D1 → D2 → D3 → D4`。  
 > `D1-R` 已完成，但它现在只保留为校准参考，正式结果见：`09-exp-d1r-results-memo.md`。  
+> `D0 / D1` 已完成，正式结果见：`15-exp-d0-d1-results-memo.md`。  
 > v3 对应执行文档见：`10-exp-d0-dyn-feasibility.md`、`11-exp-d1-dyn-local-experts.md`、`12-exp-d2-linear-performance-proxy.md`、`13-exp-d3-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`。
 
 ---
@@ -577,7 +578,7 @@ action = decide_action(ρ_window)  # 离散动作
 
 ---
 
-**当前状态**: 📌 v3 主线已落地，下一步先做 `D0`
-**关键变化**: 不再先问“静态器够不够强”，而是先问“数据里是否存在值得动态化的局部决策结构”
-**下一步**: 运行 `D0`，只有它证明动态需求存在，才继续 `D1`
-**对应文档**: `09-exp-d1r-results-memo.md`、`10-exp-d0-dyn-feasibility.md`、`11-exp-d1-dyn-local-experts.md`、`12-exp-d2-linear-performance-proxy.md`、`13-exp-d3-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`
+**当前状态**: 📌 `D0` 强通过，`D1` 未通过，当前停在“重构专家集”
+**关键变化**: 已经证明动态需求存在；当前瓶颈从“要不要动态”转成“当前动作空间是否足够互补”
+**下一步**: 暂不进入 `D2/D3`，先重构 `D1` 的局部专家集
+**对应文档**: `09-exp-d1r-results-memo.md`、`10-exp-d0-dyn-feasibility.md`、`11-exp-d1-dyn-local-experts.md`、`12-exp-d2-linear-performance-proxy.md`、`13-exp-d3-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`、`15-exp-d0-d1-results-memo.md`

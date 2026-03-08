@@ -5,7 +5,7 @@
 - **阶段一**：复现静态 baseline，验证“表征-行为不一致”现象
 - **阶段二**：实现并检验 `DCA-BGF`（Dynamic Conditional Alignment with Behavior-Guided Feedback）
 - **阶段三**：从“连续动态控制”转向 **RA-first risk-aware selective adaptation**
-- **当前下一步**：规划 `KSDA`（Koopman-Space Dynamic Alignment）方向
+- **当前下一步**：推进 `KSDA v3`，但先重做动作空间，再决定是否进入 `D2/D3`
 
 换句话说，这个仓库不是单一算法的最终版代码，而是一个**研究工作台**：包含代码、实验结果、阶段文档、失败分析和下一阶段的研究设计。
 
@@ -18,13 +18,15 @@
   - Stage 1 baseline 复现与现象验证
   - Stage 2 DCA-BGF MVP / full / ablation / rescue
   - Stage 3 KCAR 风险诊断、RA-first policy benchmark、trial-level 动态门控实验
+  - KSDA 的旧 `D.1 / D.1+`、`D1-R` 校准实验，以及 v3 的 `D0 / D1` 可行性验证
 - **当前结论**：
   - `RA` 仍然是当前设定下最稳健的默认策略
   - “连续动态 gating + 行为反馈”这条主线**没有稳定超过 RA**
   - 风险感知的**选择性偏离 RA**有价值，`KCAR` policy 在当前结果中出现了小幅正增益
+  - KSDA v3 的 `D0` 已证明“动态是必要的”，但 `D1` 表明“当前专家集还不够好”
 - **下一步**：
-  - 继续推进 `docs/KSDA/` 中定义的 Koopman 空间新路线
-  - 当前仓库里 **KSDA 还是规划文档，没有对应实现代码**
+  - 优先重做 Koopman 动作空间 / 专家集，再重新验证 `D1`
+  - 在新的 `D1` 站住之前，**不贸然进入** `D2` 线性性能代理学习或 `D3` 算子修正
 
 ---
 
@@ -36,7 +38,7 @@
 
 演进为：
 
-> “在 RA 作为强默认策略时，能否用风险信号只在合适窗口偏离 RA，从而减少负迁移？”
+> “在 RA-first 主线被证实后，Koopman 空间里是否真的存在值得学习的动态动作结构？”
 
 ---
 
@@ -47,7 +49,8 @@
 | `2026-03-05` | Stage 1 | `experiments/baseline_csp_lda.py`、`experiments/baseline_ea.py`、`experiments/baseline_ra.py`、`experiments/phenomenon_verification.py`、`docs/stage1/` | 复现 no-align / EA / RA；确认存在表征-行为不一致现象 |
 | `2026-03-06` | Stage 2 | `experiments/dca_bgf_mvp.py`、`experiments/dca_bgf_full.py`、`experiments/ablation_study.py`、`experiments/stage2_rescue.py`、`docs/stage2/` | DCA-BGF 当前实现未稳定超过 RA，项目主线开始 pivot |
 | `2026-03-07` | Stage 3 | `experiments/kcar_risk_diagnostic.py`、`experiments/kcar_safe_policy.py`、`experiments/trial_dynamic_gate_exp_a.py`、`experiments/trial_dynamic_gate_exp_b.py`、`experiments/trial_dynamic_gate_exp_b1.py`、`docs/stage3/` | 转向 RA-first risk-aware selective adaptation；KCAR policy 出现小幅收益 |
-| `2026-03-08` | Next | `docs/KSDA/` | 基于 Stage 3 的结论，规划 Koopman-Space Dynamic Alignment（KSDA） |
+| `2026-03-08` | KSDA Phase 1 | `experiments/ksda_exp_d1.py`、`experiments/ksda_exp_d1_plus_kcar_gate.py`、`experiments/ksda_exp_d1r.py`、`docs/KSDA/06-results-memo-d1-d1plus.md`、`docs/KSDA/09-exp-d1r-results-memo.md` | Koopman 表征本身有信息，但静态对齐器仍不够可靠，旧 `D.1 / D.1+` 主线被冻结为参考 |
+| `2026-03-08` | KSDA v3 | `experiments/ksda_exp_d0_dynamic_feasibility.py`、`experiments/ksda_exp_d1_dynamic_local_experts.py`、`src/evaluation/ksda_v3.py`、`docs/KSDA/15-exp-d0-d1-results-memo.md` | `D0` 证明动态需求存在，`D1` 证明当前专家集不足；下一步应先重做动作空间 |
 
 如果你想按时间顺序理解整个项目，最推荐的文档路径是：
 
@@ -57,7 +60,8 @@
 4. `docs/stage3/00-overview.md`
 5. `docs/stage3/01-kcar-risk-diagnostic.md`
 6. `docs/stage3/02-ra-first-policy-benchmark.md`
-7. `docs/KSDA/00-overview.md`
+7. `docs/KSDA/00-overview-v2.md`
+8. `docs/KSDA/15-exp-d0-d1-results-memo.md`
 
 ---
 
@@ -142,6 +146,47 @@
 
 这进一步强化了同一个结论：**复杂的连续 gate 依旧没有打赢强默认策略 `RA / fixed w=1.0`。**
 
+### KSDA：从“规划中”变成“已完成首轮可行性验证”
+
+#### 旧 Phase 1 / 校准线
+
+在 Koopman 路线上，仓库里已经不只是设计文档，还包括了几轮已完成实验：
+
+- `D.1 / D.1+`：见 `results/ksda/exp_d1/2026-03-08-ksda-d1/summary.json` 与 `results/ksda/exp_d1_plus/2026-03-08-ksda-d1plus/summary.json`
+- `D1-R`：见 `results/ksda/exp_d1r/2026-03-08-ksda-d1r-r1/summary.json`
+
+当前结论：
+
+- `D1-R` 中 `RA = 0.4375`
+- 最佳静态 Koopman 对齐器仅到 `0.4132`
+- `Koopman-noalign = 0.4109`，高于传统 `NoAlign = 0.3804`
+
+这说明：
+
+- **Koopman 表征本身是有信息的**
+- 但 **当前静态对齐器 `A` 仍不够强**
+
+#### KSDA v3：D0 / D1 新主线
+
+最新完成的是 `D0` 与 `D1`：
+
+- `D0`：`results/ksda/exp_d0/2026-03-08-ksda-d0-r1/summary.json`
+- `D1`：`results/ksda/exp_d1/2026-03-08-ksda-d1-r1/summary.json`
+- 结果备忘录：`docs/KSDA/15-exp-d0-d1-results-memo.md`
+
+关键数字：
+
+| 实验 | 结论 | 关键数字 |
+|------|------|----------|
+| `D0` | 动态需求存在 | `oracle = 0.4502`，比最佳固定动作 `0.4093` 高 `+0.0409` |
+| `D1` | 当前专家集不足 | `oracle = 0.4232`，最佳单专家 `0.4109`，但 `most_common_ratio = 0.8272`，未通过 gate |
+
+因此 KSDA 现在的最强结论不是“D2/D3 马上开做”，而是：
+
+- **动态确实有必要**
+- **但当前动作空间 / 专家集还不够有意义**
+- 所以下一步应先重做专家集，而不是急着学习更复杂的 controller
+
 ---
 
 ## 仓库结构
@@ -154,7 +199,7 @@
 ├── results/        # 已提交的实验产物、摘要、图表
 ├── scripts/        # 预处理和验证脚本
 ├── src/            # 数据、对齐、特征、模型、评估核心实现
-└── tests/          # Stage 1 ~ Stage 3 相关测试
+└── tests/          # Stage 1 ~ Stage 3 + KSDA 相关测试
 ```
 
 ### 代码模块说明
@@ -163,7 +208,7 @@
 - `src/features/`：协方差与 CSP 特征
 - `src/alignment/`：EA / RA / conditional alignment / DCA-BGF / feedback
 - `src/models/`：分类器封装（当前主要是 LDA）
-- `src/evaluation/`：LOSO、pairwise transfer、KCAR 分析、policy benchmark、可视化
+- `src/evaluation/`：LOSO、pairwise transfer、KCAR 分析、policy benchmark、KSDA v3 工具、可视化
 - `src/utils/`：配置、日志、上下文特征等工具
 
 ---
@@ -290,6 +335,39 @@ python3 experiments/trial_dynamic_gate_exp_b1.py --run-name latest
 > 建议不要长期使用默认的 `latest` 作为正式实验名。  
 > 想保留历史实验时，更推荐显式传入带日期的 `--run-name`。
 
+### 5. KSDA：旧 Phase 1 / 校准实验
+
+```bash
+python3 experiments/ksda_exp_d1.py --run-name latest
+python3 experiments/ksda_exp_d1_plus_kcar_gate.py --run-name latest
+python3 experiments/ksda_exp_d1r.py --run-name latest
+```
+
+主要输出：
+
+- `results/ksda/exp_d1/<run-name>`
+- `results/ksda/exp_d1_plus/<run-name>`
+- `results/ksda/exp_d1r/<run-name>`
+
+### 6. KSDA v3：动态可行性与局部专家集
+
+```bash
+python3 experiments/ksda_exp_d0_dynamic_feasibility.py --run-name latest
+python3 experiments/ksda_exp_d1_dynamic_local_experts.py --run-name latest
+python3 experiments/ksda_exp_d2_linear_performance_proxy.py --run-name latest --force
+python3 experiments/ksda_exp_d3_operator_correction.py --run-name latest --force
+```
+
+主要输出：
+
+- `results/ksda/exp_d0/<run-name>`
+- `results/ksda/exp_d1/<run-name>`
+- `results/ksda/exp_d2/<run-name>`（当进入 D2 时）
+- `results/ksda/exp_d3/<run-name>`（当进入 D3 时）
+
+> 按当前结论，`D2 / D3` 还不应作为默认下一步；  
+> 它们保留在 README 中，是为了完整记录 v3 实验链路。
+
 ---
 
 ## 验证与测试
@@ -312,6 +390,7 @@ python3 -m pytest tests -q
 - CSP / CKA
 - Stage 2 分析与反馈逻辑
 - Stage 3 trial dynamic 实验的关键路径
+- KSDA Koopman 对齐与 v3 动态工具链
 
 ---
 
@@ -332,11 +411,13 @@ python3 -m pytest tests -q
 6. `docs/stage3/02-ra-first-policy-benchmark.md`
 7. `docs/stage3/08-exp-b1-results-memo.md`
 
-### 最后看下一阶段方向
+### 最后看 KSDA 的最新主线
 
-8. `docs/KSDA/00-overview.md`
-9. `docs/KSDA/01-exp-d1-static-alignment.md`
-10. `docs/KSDA/02-exp-d2-online-update.md`
+8. `docs/KSDA/00-overview-v2.md`
+9. `docs/KSDA/15-exp-d0-d1-results-memo.md`
+10. `docs/KSDA/10-exp-d0-dyn-feasibility.md`
+11. `docs/KSDA/11-exp-d1-dyn-local-experts.md`
+12. `docs/KSDA/12-exp-d2-linear-performance-proxy.md`
 
 ---
 
@@ -347,6 +428,7 @@ python3 -m pytest tests -q
 - baseline 摘要 CSV / JSON
 - Stage 2 rescue 扫描结果
 - Stage 3 KCAR 诊断结果
+- `results/ksda/` 下的 Koopman / KSDA 系列结果
 - policy benchmark 汇总表
 - 各种 PDF 图表
 
@@ -355,6 +437,7 @@ python3 -m pytest tests -q
 - `results/baselines/`
 - `results/stage2/`
 - `results/stage3/`
+- `results/ksda/`
 
 ---
 
@@ -371,8 +454,8 @@ python3 -m pytest tests -q
 3. **Stage 3 是主线重构阶段**  
    项目不再试图证明“连续动态控制一定更优”，而是转向“默认 RA、少量偏离”的安全自适应叙事。
 
-4. **KSDA 是下一步假设，不是现成成果**  
-   `docs/KSDA/` 很重要，但请注意它目前还是研究设计，不是已经跑完的实证结果。
+4. **KSDA 已经进入“有结果的研究迭代”阶段**  
+   现在不再只是 proposal；`D.1 / D.1+ / D1-R / D0 / D1` 都已有实证结果，但它们当前支持的结论是“需要重做动作空间”，而不是“已经找到最终方法”。
 
 ---
 
