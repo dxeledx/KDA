@@ -6,9 +6,9 @@
 
 > **执行状态更新**  
 > 本文档的 `D.1 / D.1+` 现已冻结为旧 Phase 1 参考。  
-> 当前真正执行的新主线已经切换为：`D1-R → D1+-R → 条件触发 D2/D3`。  
-> `D1-R` 已完成，正式结果见：`09-exp-d1r-results-memo.md`。  
-> 对应执行文档见：`07-exp-d1r-static-benchmark.md` 与 `08-exp-d1plus-r-signal-benchmark.md`。
+> 当前真正执行的新主线已经切换为：`D0 → D1 → D2 → D3 → D4`。  
+> `D1-R` 已完成，但它现在只保留为校准参考，正式结果见：`09-exp-d1r-results-memo.md`。  
+> v3 对应执行文档见：`10-exp-d0-dyn-feasibility.md`、`11-exp-d1-dyn-local-experts.md`、`12-exp-d2-linear-performance-proxy.md`、`13-exp-d3-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`。
 
 ---
 
@@ -577,7 +577,7 @@ action = decide_action(ρ_window)  # 离散动作
 
 ---
 
-**当前状态**: 📌 `D1-R` 已完成，但未通过 `D1+-R` 进入门槛
-**关键变化**: Koopman 表征已证明可用，当前瓶颈进一步收缩为“静态对齐器还不够可靠”
-**下一步**: 暂不运行 `D1+-R`，先固定 `D1-R` 结果并继续解耦静态器问题
-**对应文档**: `06-results-memo-d1-d1plus.md`、`07-exp-d1r-static-benchmark.md`、`08-exp-d1plus-r-signal-benchmark.md`、`09-exp-d1r-results-memo.md`
+**当前状态**: 📌 v3 主线已落地，下一步先做 `D0`
+**关键变化**: 不再先问“静态器够不够强”，而是先问“数据里是否存在值得动态化的局部决策结构”
+**下一步**: 运行 `D0`，只有它证明动态需求存在，才继续 `D1`
+**对应文档**: `09-exp-d1r-results-memo.md`、`10-exp-d0-dyn-feasibility.md`、`11-exp-d1-dyn-local-experts.md`、`12-exp-d2-linear-performance-proxy.md`、`13-exp-d3-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`

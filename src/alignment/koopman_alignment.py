@@ -238,6 +238,89 @@ class KoopmanAffineAligner:
 
 
 @dataclass
+class KoopmanIdentityAligner:
+    def fit(self, source_features: np.ndarray, target_features: np.ndarray | None = None) -> "KoopmanIdentityAligner":  # noqa: ARG002
+        return self
+
+    def transform(self, features: np.ndarray) -> np.ndarray:
+        return np.asarray(features, dtype=np.float64)
+
+
+@dataclass
+class KoopmanMeanShiftAligner:
+    shift_strength: float = 0.5
+    source_mean_: np.ndarray | None = None
+    target_mean_: np.ndarray | None = None
+
+    def fit(self, source_features: np.ndarray, target_features: np.ndarray) -> "KoopmanMeanShiftAligner":
+        self.source_mean_ = np.asarray(source_features, dtype=np.float64).mean(axis=0)
+        self.target_mean_ = np.asarray(target_features, dtype=np.float64).mean(axis=0)
+        return self
+
+    def transform(self, features: np.ndarray) -> np.ndarray:
+        if self.source_mean_ is None or self.target_mean_ is None:
+            raise RuntimeError("KoopmanMeanShiftAligner is not fitted.")
+        shift = float(self.shift_strength) * (self.source_mean_ - self.target_mean_)
+        return np.asarray(features, dtype=np.float64) + shift
+
+
+@dataclass
+class KoopmanDiagonalScalingAligner:
+    clip_min: float = 0.67
+    clip_max: float = 1.5
+    source_mean_: np.ndarray | None = None
+    target_mean_: np.ndarray | None = None
+    scale_: np.ndarray | None = None
+
+    def fit(self, source_features: np.ndarray, target_features: np.ndarray) -> "KoopmanDiagonalScalingAligner":
+        source = np.asarray(source_features, dtype=np.float64)
+        target = np.asarray(target_features, dtype=np.float64)
+        self.source_mean_ = source.mean(axis=0)
+        self.target_mean_ = target.mean(axis=0)
+        source_std = np.clip(source.std(axis=0), 1.0e-8, None)
+        target_std = np.clip(target.std(axis=0), 1.0e-8, None)
+        self.scale_ = np.clip(source_std / target_std, float(self.clip_min), float(self.clip_max))
+        return self
+
+    def transform(self, features: np.ndarray) -> np.ndarray:
+        if self.source_mean_ is None or self.target_mean_ is None or self.scale_ is None:
+            raise RuntimeError("KoopmanDiagonalScalingAligner is not fitted.")
+        features = np.asarray(features, dtype=np.float64)
+        return (features - self.target_mean_) * self.scale_ + self.source_mean_
+
+
+@dataclass
+class KoopmanShrinkageAffineAligner:
+    rank: int = 16
+    shrink: float = 0.3
+    eps: float = 1.0e-6
+    affine_: KoopmanAffineAligner | None = None
+    basis_: np.ndarray | None = None
+
+    def fit(self, source_features: np.ndarray, target_features: np.ndarray) -> "KoopmanShrinkageAffineAligner":
+        source = np.asarray(source_features, dtype=np.float64)
+        target = np.asarray(target_features, dtype=np.float64)
+        self.affine_ = KoopmanAffineAligner(eps=self.eps).fit(source, target)
+        centered = source - source.mean(axis=0)
+        if centered.shape[0] > 1:
+            _, _, vh = np.linalg.svd(centered, full_matrices=False)
+            basis = vh[: min(int(self.rank), vh.shape[0])].T
+        else:
+            basis = np.eye(source.shape[1], dtype=np.float64)[:, : min(int(self.rank), source.shape[1])]
+        self.basis_ = np.asarray(basis, dtype=np.float64)
+        return self
+
+    def transform(self, features: np.ndarray) -> np.ndarray:
+        if self.affine_ is None or self.basis_ is None:
+            raise RuntimeError("KoopmanShrinkageAffineAligner is not fitted.")
+        features = np.asarray(features, dtype=np.float64)
+        affine_features = self.affine_.transform(features)
+        delta = affine_features - features
+        projected_delta = delta @ self.basis_ @ self.basis_.T
+        return features + float(self.shrink) * projected_delta
+
+
+@dataclass
 class _ProjectionAlignerBase:
     k: int = 16
     reg_lambda: float = 1.0e-3

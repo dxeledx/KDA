@@ -86,3 +86,33 @@ def test_supervised_aligners_output_requested_rank():
         assert transformed.shape == (60, 20)
         assert aligner.projection_.shape == (20, 8)
         assert np.isfinite(transformed).all()
+
+
+def test_mean_shift_aligner_moves_target_mean_towards_source():
+    from src.alignment.koopman_alignment import KoopmanMeanShiftAligner
+
+    rng = np.random.RandomState(3)
+    source = rng.randn(80, 6)
+    target = source + 2.0
+
+    aligner = KoopmanMeanShiftAligner(shift_strength=0.5).fit(source, target)
+    aligned = aligner.transform(target)
+
+    before = np.linalg.norm(target.mean(axis=0) - source.mean(axis=0))
+    after = np.linalg.norm(aligned.mean(axis=0) - source.mean(axis=0))
+    assert after < before
+
+
+def test_diagonal_scaling_aligner_reduces_per_dimension_scale_gap():
+    from src.alignment.koopman_alignment import KoopmanDiagonalScalingAligner
+
+    rng = np.random.RandomState(4)
+    source = rng.randn(100, 5)
+    target = source * np.array([2.0, 0.5, 3.0, 1.5, 0.8]) + 1.0
+
+    aligner = KoopmanDiagonalScalingAligner().fit(source, target)
+    aligned = aligner.transform(target)
+
+    before = np.linalg.norm(target.std(axis=0) - source.std(axis=0))
+    after = np.linalg.norm(aligned.std(axis=0) - source.std(axis=0))
+    assert after < before
