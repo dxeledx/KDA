@@ -1,0 +1,26 @@
+{
+  "d0_run_dir": "results/ksda/exp_d0/2026-03-08-ksda-d0-r1",
+  "d1r_run_dir": "results/ksda/exp_d1r/2026-03-08-ksda-d1r-r1",
+  "representation": {
+    "pca_rank": 16,
+    "lifting": "quadratic"
+  },
+  "window_size": 16,
+  "best_single_expert": "E0_identity",
+  "dynamic_expert_need_exists": false,
+  "oracle_expert_summary": {
+    "window_size": 16,
+    "oracle_accuracy_mean": 0.4232253086419753,
+    "best_single_expert": "E0_identity",
+    "best_single_accuracy_mean": 0.4108796296296296,
+    "mean_delta_vs_best_single": 0.01234567901234567,
+    "wins_vs_best_single": 9,
+    "losses_vs_best_single": 0,
+    "draws_vs_best_single": 0,
+    "most_common_ratio": 0.8271604938271605,
+    "subjects_with_multiple_experts": 9,
+    "max_single_subject_contribution": 0.21875000000000014,
+    "passed": false
+  },
+  "elapsed_sec": 38.61315984185785
+}

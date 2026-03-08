@@ -1,0 +1,42 @@
+{
+  "ra": {
+    "method": "ra",
+    "accuracy_mean": 0.4375,
+    "accuracy_std": 0.14078565925495343,
+    "delta_vs_ra": 0.0,
+    "wins": 0,
+    "losses": 0,
+    "draws": 9,
+    "elapsed_sec": 35.147420787252486
+  },
+  "noalign": {
+    "method": "noalign",
+    "accuracy_mean": 0.3804012345679012,
+    "accuracy_std": 0.1179420296560833,
+    "delta_vs_ra": -0.05709876543209876,
+    "wins": 2,
+    "losses": 7,
+    "draws": 0,
+    "elapsed_sec": 16.35475696530193
+  },
+  "koopman-noalign": {
+    "method": "koopman-noalign",
+    "accuracy_mean": 0.4108796296296296,
+    "accuracy_std": 0.1452949718951922,
+    "delta_vs_ra": -0.026620370370370367,
+    "wins": 2,
+    "losses": 5,
+    "draws": 2,
+    "elapsed_sec": 36.852598450146616
+  },
+  "ksda-static": {
+    "method": "ksda-static",
+    "accuracy_mean": 0.3506944444444444,
+    "accuracy_std": 0.06184553170332249,
+    "delta_vs_ra": -0.08680555555555555,
+    "wins": 2,
+    "losses": 7,
+    "draws": 0,
+    "elapsed_sec": 38.5707455072552
+  }
+}

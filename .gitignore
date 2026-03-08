@@ -25,12 +25,17 @@ data/processed/
 *.h5
 
 # Results
-results/
+results/*
+!results/ksda/
+!results/ksda/**
 *.pdf
 *.png
+!results/ksda/**/*.pdf
+!results/ksda/**/*.png
 
 # Logs
 *.log
+!runs/*.log
 
 # IDE
 .vscode/

@@ -1,0 +1,31 @@
+{
+  "d1r_run_dir": "results/ksda/exp_d1r/2026-03-08-ksda-d1r-r1",
+  "weights": [
+    0.0,
+    0.25,
+    0.5,
+    0.75,
+    1.0
+  ],
+  "window_sizes": [
+    16,
+    32,
+    48
+  ],
+  "best_window_size": 16,
+  "dynamic_need_exists": true,
+  "best_window_summary": {
+    "window_size": 16,
+    "oracle_accuracy_mean": 0.45023148148148145,
+    "best_fixed_w": 1.0,
+    "best_fixed_accuracy_mean": 0.40933641975308643,
+    "mean_delta_vs_best_fixed": 0.040895061728395056,
+    "wins_vs_best_fixed": 9,
+    "losses_vs_best_fixed": 0,
+    "draws_vs_best_fixed": 0,
+    "most_common_ratio": 0.3395061728395062,
+    "subjects_with_multiple_actions": 9,
+    "passed": true
+  },
+  "elapsed_sec": 38.55489301774651
+}

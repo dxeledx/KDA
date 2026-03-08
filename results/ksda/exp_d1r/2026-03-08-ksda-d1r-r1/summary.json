@@ -1,0 +1,59 @@
+{
+  "ra": {
+    "accuracy_mean": 0.4375,
+    "accuracy_std": 0.14078565925495343,
+    "elapsed_sec": 35.28076711669564
+  },
+  "noalign": {
+    "accuracy_mean": 0.3804012345679012,
+    "accuracy_std": 0.1179420296560833,
+    "elapsed_sec": 16.68747679516673
+  },
+  "representation": {
+    "best": {
+      "pca_rank": 16,
+      "lifting": "quadratic",
+      "accuracy_mean": 0.4108796296296296,
+      "distance_ratio_mean": 0.67866353580718
+    },
+    "representation_viable": true,
+    "gap_vs_noalign": 0.03047839506172839
+  },
+  "best_static": {
+    "method": "A1",
+    "k": 32,
+    "reg_lambda": 0.0001,
+    "normalize_output": true,
+    "accuracy_mean": 0.4131944444444445,
+    "accuracy_std": 0.14098889816529597,
+    "wins_vs_a0": 5,
+    "distance_ratio_delta_mean": -0.10917649533178007,
+    "distance_ratio_improved_subjects": 4,
+    "fold_failures": 0,
+    "ready_for_d1pr": false
+  },
+  "gates": {
+    "representation_viable": true,
+    "static_ready_for_d1pr": false
+  },
+  "frozen_reference": {
+    "legacy_affine": {
+      "method": "legacy-affine",
+      "accuracy_mean": 0.3815586419753087,
+      "accuracy_std": 0.12755921407328105,
+      "delta_vs_reference": -0.03009259259259259,
+      "wins_vs_reference": 2,
+      "losses_vs_reference": 7,
+      "draws_vs_reference": 0,
+      "elapsed_sec": 26.844075260683894,
+      "k": NaN,
+      "reg_lambda": NaN,
+      "normalize_output": false,
+      "distance_ratio_before_mean": 0.6787978642080388,
+      "distance_ratio_after_mean": 0.2815874467456663,
+      "distance_ratio_delta_mean": -0.39721041746237246,
+      "distance_ratio_improved_subjects": 5,
+      "fold_failures": 0
+    }
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "ra": {
+    "method": "ra",
+    "accuracy_mean": 0.4375,
+    "accuracy_std": 0.14078565925495343,
+    "delta_vs_ra": 0.0,
+    "wins": 0,
+    "losses": 0,
+    "draws": 9,
+    "elapsed_sec": 35.07620700728148
+  },
+  "ksda-static": {
+    "method": "ksda-static",
+    "accuracy_mean": 0.34876543209876537,
+    "accuracy_std": 0.06496190733152407,
+    "delta_vs_ra": -0.08873456790123457,
+    "wins": 2,
+    "losses": 7,
+    "draws": 0,
+    "elapsed_sec": 45.887802426703274
+  },
+  "ksda-geometric-gate": {
+    "method": "ksda-geometric-gate",
+    "accuracy_mean": 0.3896604938271605,
+    "accuracy_std": 0.11871468592665325,
+    "delta_vs_ra": -0.047839506172839504,
+    "wins": 2,
+    "losses": 7,
+    "draws": 0,
+    "elapsed_sec": 45.887802426703274
+  },
+  "ksda-kcar-gate": {
+    "method": "ksda-kcar-gate",
+    "accuracy_mean": 0.38618827160493824,
+    "accuracy_std": 0.09521390774849019,
+    "delta_vs_ra": -0.05131172839506173,
+    "wins": 3,
+    "losses": 6,
+    "draws": 0,
+    "elapsed_sec": 45.887802426703274
+  },
+  "fixed_w=0.5": {
+    "method": "fixed_w=0.5",
+    "accuracy_mean": 0.39737654320987653,
+    "accuracy_std": 0.10285796994550306,
+    "delta_vs_ra": -0.04012345679012347,
+    "wins": 3,
+    "losses": 6,
+    "draws": 0,
+    "elapsed_sec": 45.887802426703274
+  }
+}
