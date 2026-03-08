@@ -20,8 +20,6 @@ sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.alignment.conditional import LinearConditionalWeight
 from src.alignment.koopman_alignment import fit_alignment, transform
-from src.data.loader import BCIDataLoader
-from src.data.preprocessing import Preprocessor
 from src.evaluation.kcar_analysis import (
     compute_kcar,
     compute_transition_residuals,
@@ -29,10 +27,8 @@ from src.evaluation.kcar_analysis import (
     fit_subjectwise_global_koopman,
 )
 from src.evaluation.metrics import compute_metrics
-from src.evaluation.protocols import evaluate_loso
 from src.features.covariance import compute_covariances
 from src.models.classifiers import LDA
-from src.utils.config import ensure_dir, load_yaml, seed_everything
 from src.utils.logger import get_logger
 
 
@@ -90,10 +86,10 @@ def _normalize_context(context: np.ndarray, stats: Dict[str, np.ndarray]) -> np.
 
 
 def _run_fold(
-    loader: BCIDataLoader,
+    loader,
     all_subjects: List[int],
     target_subject: int,
-    pre: Preprocessor,
+    pre,
     lda_kwargs: Dict,
     cov_eps: float,
     pca_rank: int,
@@ -198,6 +194,11 @@ def _summarize(df: pd.DataFrame, ra_df: pd.DataFrame, method_name: str, elapsed_
 
 
 def main() -> None:
+    from src.data.loader import BCIDataLoader
+    from src.data.preprocessing import Preprocessor
+    from src.evaluation.protocols import evaluate_loso
+    from src.utils.config import ensure_dir, load_yaml, seed_everything
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--run-name", default="latest")
     parser.add_argument("--targets", default=None)

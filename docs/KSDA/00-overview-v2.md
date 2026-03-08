@@ -4,6 +4,12 @@
 **更新原因**: Exp-B.1证明问题不在尺度,在信号本身
 **核心调整**: 优先验证KCAR作为更好的信号,而非继续优化几何特征
 
+> **执行状态更新**  
+> 本文档的 `D.1 / D.1+` 现已冻结为旧 Phase 1 参考。  
+> 当前真正执行的新主线已经切换为：`D1-R → D1+-R → 条件触发 D2/D3`。  
+> `D1-R` 已完成，正式结果见：`09-exp-d1r-results-memo.md`。  
+> 对应执行文档见：`07-exp-d1r-static-benchmark.md` 与 `08-exp-d1plus-r-signal-benchmark.md`。
+
 ---
 
 ## 🔴 关键洞察 (来自Exp-B.1)
@@ -571,7 +577,7 @@ action = decide_action(ρ_window)  # 离散动作
 
 ---
 
-**当前状态**: 📝 v2.0规划完成，准备开始 Exp-D.1 / Exp-D.1+
-**关键变化**: 优先验证KCAR,避免重蹈Exp-B.1覆辙
-**下一步**: 开始实现 Exp-D.1，并在其通过后立刻运行 Exp-D.1+
-**预计完成**: 根据D.1+结果决定 (2-10周)
+**当前状态**: 📌 `D1-R` 已完成，但未通过 `D1+-R` 进入门槛
+**关键变化**: Koopman 表征已证明可用，当前瓶颈进一步收缩为“静态对齐器还不够可靠”
+**下一步**: 暂不运行 `D1+-R`，先固定 `D1-R` 结果并继续解耦静态器问题
+**对应文档**: `06-results-memo-d1-d1plus.md`、`07-exp-d1r-static-benchmark.md`、`08-exp-d1plus-r-signal-benchmark.md`、`09-exp-d1r-results-memo.md`
