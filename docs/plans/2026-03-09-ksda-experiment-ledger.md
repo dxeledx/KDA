@@ -14,6 +14,9 @@
 | E2 | done | method | 加入 RBID surrogate 后是否进一步降低 mismatch？ | 在 E1 上加 `RBID surrogate` ranking loss | E1 | acc / kappa / RBID / Tail-RBID | `results/e2/2026-03-09-e2-r1` | 相对 E1 未通过 gate，需要诊断 surrogate 设计 |
 | E2-Diag | done | diagnosis | E2 的失败有多少来自 pairwise 协议混杂？ | 用 E2 的 target-global pairwise 协议重算 `lambda_rank=0` conservative baseline | 原始 E1 pairwise + E2 | pairwise acc / RBID / Tail-RBID / Pearson-r | `results/e2_diag/2026-03-09-e2diag-r1` | 协议混杂存在，但 E2 在同口径下仍未优于 refreshed baseline |
 | E2-ProxyDiag | done | diagnosis | 当前 surrogate 真正坏在 prior 还是 proxy？ | 固定 `RA prior` 与 target-global 协议，只更换 similarity proxy 做离线诊断 | E2-Diag refreshed baseline | proxy-vs-behavior RBID / Spearman / Pearson | `results/e2_proxy_diag/2026-03-09-e2proxy-r1` | 当前 `aligned mean cosine` 明显失效，下一步应优先替换 proxy |
+| E2a | done | method | 只换 proxy 能否救回 E2？ | 保持 `RA prior` 和 pairwise logistic loss 不变，把 `aligned mean cosine` 换成 `mean+dyn` 结构化 score | `E1` LOSO + `E2-Diag` refresh pairwise | acc / RBID / Tail-RBID / pairwise acc | `results/e2a/2026-03-09-e2a-r1` | 未通过 gate；当前 `mean+dyn` proxy 没有优于 refresh 或 E2 |
+| E2b | done | method | 只换 surrogate 形式能否救回 E2a？ | 保持 `RA prior` 和 `mean+dyn` proxy 不变，把 pairwise logistic surrogate 换成 `Soft-RBID + Huber` | `E2a` + `E2-Diag` refresh pairwise | acc / RBID / Tail-RBID / pairwise acc | `results/e2b/2026-03-09-e2b-r1` | 未通过 gate；surrogate-only 改动不足以改善 refresh baseline 或 E2 |
+| E2c | done | method | 只加 tail weighting 能否救回 E2b？ | 保持 `RA prior`、`mean+dyn` proxy、Soft-RBID 不变，只加 `tail-aware weighting` | `E2b` + `E2-Diag` refresh pairwise | acc / RBID / Tail-RBID / pairwise acc | `results/e2c/2026-03-09-e2c-r1` | 未通过 gate；tail weighting 没有进一步降低 `Tail-RBID` |
 | E3 | backlog | extension | 窗口级保守更新是否还有增益？ | 静态 → 窗口级 | E2 | acc / RBID / Tail-RBID / stability | TBD | TBD |
 | E4 | backlog | extension | 线性性能修正算子是否值得作为第二贡献？ | 算子修正 | E2 | acc / RBID / operator stats | TBD | TBD |
 
@@ -123,6 +126,27 @@
     - `RBID_vs_ra = 0.2738`
     - `mean_target_corr_ra_spearman = 0.4020`
 - 因此当前主问题优先级已明确：先换 proxy，再决定是否保留 `RA prior`。
+- 完成 `E2a`：`results/e2a/2026-03-09-e2a-r1`。
+- `E2a` 只把 training proxy 换成 `mean+dyn` 结构化 score，结果仍未通过 gate：
+  - LOSO accuracy: `0.4228`，低于 `E1` 的 `0.4248`
+  - Pairwise RBID: `0.3095`，高于 refresh baseline 的 `0.2937`
+  - Pairwise Tail-RBID: `0.6327`，高于 refresh baseline 的 `0.6190`
+  - Pairwise accuracy mean: `0.3146`，低于 refresh baseline 的 `0.3208`
+- 因此 `aligned mean cosine` 的确不是好 proxy，但当前 `mean+dyn` 替换版也没有救回 E2；下一步应进入 `E2b`，优先改 surrogate 形式而不是继续堆 proxy。
+- 完成 `E2b`：`results/e2b/2026-03-09-e2b-r1`。
+- `E2b` 保持 `RA prior` 与 `mean+dyn` proxy 不变，只把 mismatch surrogate 改为 `Soft-RBID + Huber`，结果仍未通过 gate：
+  - LOSO accuracy: `0.4213`，低于 `E1` 的 `0.4248`
+  - Pairwise RBID: `0.3095`，高于 refresh baseline 的 `0.2937`
+  - Pairwise Tail-RBID: `0.6234`，高于 refresh baseline 的 `0.6190`
+  - Pairwise accuracy mean: `0.3145`，低于 refresh baseline 的 `0.3208`
+- 因此当前证据已经更明确：不是单独换 proxy 或单独换 surrogate 就能救回 E2；下一步若继续，应把 `tail weighting` 作为单独主改动进入 `E2c`，或者回到 prior/proxy 组合本身重做。
+- 完成 `E2c`：`results/e2c/2026-03-09-e2c-r1`。
+- `E2c` 保持 `RA prior`、`mean+dyn` proxy、`Soft-RBID + Huber` 不变，只加 `tail-aware weighting`，结果仍未通过 gate：
+  - LOSO accuracy: `0.4228`，仍低于 `E1` 的 `0.4248`
+  - Pairwise RBID: `0.3095`，仍高于 refresh baseline 的 `0.2937`
+  - Pairwise Tail-RBID: `0.6234`，与 `E2b` 持平，未进一步降低
+  - Pairwise accuracy mean: `0.3145`，仍低于 refresh baseline 的 `0.3208`
+- 因此到 `E2c` 为止，`proxy-only / surrogate-only / tail-weighting-only` 三条单因素路线都没有把方法拉回 refreshed baseline 之上；若继续，优先级应回到 `behavior prior` 与 `representation proxy` 的组合重诊断，而不是进入 `E3 / E4`。
 
 ---
 
@@ -475,6 +499,220 @@
 #### I. 下一步动作
 
 - 先做一个 `proxy replacement only` 版本：保持 `RA prior` 不变，把 `aligned mean cosine` 换成更强的 proxy。
+
+---
+
+### [E2a - 2026-03-09-e2a-r1]
+
+**Date**: 2026-03-09  
+**Owner**: Jason + Codex  
+**Status**: done
+
+#### A. 这轮要回答什么问题
+
+- 在不动 `RA prior`、不动 pairwise logistic ranking loss 的前提下，只替换 training proxy，能否把 E2 救回来？
+
+#### B. 核心假设
+
+- 如果当前失败主要是 `aligned mean cosine` 太弱，那么换成 `mean+dyn` 结构化 score 后，至少应当改善 pairwise RBID / Tail-RBID。
+
+#### C. 相比上一轮唯一主改动
+
+- 保持 `RA prior`、target-global pairwise protocol 和当前 ranking loss 不变，只把 `rank_score_mode` 改成 `mean_dyn_neg_l2`。
+
+#### D. 固定不变的控制项
+
+- Dataset: `BNCI2014001`
+- Representation: `pca_rank=48`, `quadratic`
+- Base aligner: `Conservative Koopman aligner-r48`
+- Behavior prior: `E0/RA pairwise transfer accuracy`
+- Pairwise protocol: `target-global pooled-source per target`
+
+#### E. 运行配置
+
+- Run dir: `results/e2a/2026-03-09-e2a-r1`
+
+#### F. 主结果
+
+| Metric | Value | vs Control |
+|---|---:|---:|
+| LOSO Accuracy | `0.4228` | `-0.0019` vs `E1` |
+| Pairwise RBID | `0.3095` | `+0.0159` vs refresh |
+| Pairwise Tail-RBID | `0.6327` | `+0.0136` vs refresh |
+| Pairwise Accuracy Mean | `0.3146` | `-0.0063` vs refresh |
+
+#### G. 诊断结果
+
+- 相对 `E2`：
+  - `RBID` 基本持平
+  - `Tail-RBID` 更差
+  - `pairwise_accuracy_mean` 略低
+- `rank_score_components.csv` 已输出每个 `(source,target)` 的：
+  - `mean_sq_dist`
+  - `dyn_resid`
+  - `u_score`
+  - `behavior_prior`
+  - `accuracy`
+- 结果说明 `mean+dyn` 这版 proxy 并未提供有效修复。
+
+#### H. 结论
+
+- 这轮支持什么：
+  - 仅替换 proxy 不足以解决当前 E2 问题
+  - `aligned mean cosine` 虽然差，但当前 `mean+dyn` 结构化分数也没有带来正收益
+- 这轮不支持什么：
+  - 不能把下一步继续押在“再换一种 proxy”上作为唯一主变量
+- 是否进入下一轮：
+  - 是，进入 `E2b`
+
+#### I. 下一步动作
+
+- 保持 `RA prior` 不变，优先把当前 surrogate 从“手工 rank score + logistic”升级到更贴近 RBID 的版本。
+
+---
+
+### [E2b - 2026-03-09-e2b-r1]
+
+**Date**: 2026-03-09  
+**Owner**: Jason + Codex  
+**Status**: done
+
+#### A. 这轮要回答什么问题
+
+- 在不动 `RA prior`、不动 `mean+dyn` proxy 的前提下，只把 mismatch surrogate 从 pairwise logistic 换成更贴近 exact RBID 的 `Soft-RBID + Huber`，能否把 E2a 救回来？
+
+#### B. 核心假设
+
+- 如果当前瓶颈主要是 surrogate 形式还不够接近 `RBID`，那么 target-wise soft rank 距离应该至少改善 pairwise `RBID / Tail-RBID`，即使 accuracy 不一定大涨。
+
+#### C. 相比上一轮唯一主改动
+
+- 保持 `RA prior`、`mean+dyn` proxy、target-global pairwise protocol 和 conservative residual aligner 参数化不变，只把 `rank_loss_mode` 改成 `soft_rbid_huber`。
+
+#### D. 固定不变的控制项
+
+- Dataset: `BNCI2014001`
+- Representation: `pca_rank=48`, `quadratic`
+- Base aligner: `Conservative Koopman aligner-r48`
+- Behavior prior: `E0/RA pairwise transfer accuracy`
+- Rank score: `mean_dyn_neg_l2`
+- Pairwise protocol: `target-global pooled-source per target`
+
+#### E. 运行配置
+
+- Run dir: `results/e2b/2026-03-09-e2b-r1`
+- `rank_tau = 0.1`
+- `rank_huber_delta = 0.1`
+
+#### F. 主结果
+
+| Metric | Value | vs Control |
+|---|---:|---:|
+| LOSO Accuracy | `0.4213` | `-0.0035` vs `E1` |
+| Pairwise RBID | `0.3095` | `+0.0159` vs refresh |
+| Pairwise Tail-RBID | `0.6234` | `+0.0043` vs refresh |
+| Pairwise Accuracy Mean | `0.3145` | `-0.0064` vs refresh |
+
+#### G. 诊断结果
+
+- 相对 `E2a`：
+  - `RBID` 持平
+  - `Tail-RBID` 略好：`0.6327 -> 0.6234`
+  - `pairwise_accuracy_mean` 仍略降
+- 相对 `E2`：
+  - `RBID` 持平
+  - `Tail-RBID` 持平
+  - `pearson_r` 略升，但不转化成更好的 rank-based mismatch
+- 说明 `Soft-RBID` surrogate 对 tail 有轻微修正，但不足以改变主结论。
+
+#### H. 结论
+
+- 这轮支持什么：
+  - surrogate 形式本身确实会影响局部 tail 行为
+  - 但仅替换 surrogate 仍不足以把方法拉回 refresh baseline 之上
+- 这轮不支持什么：
+  - 不能说明“只要换成更像 RBID 的 surrogate 就够了”
+  - 不能进入 `E3 / E4`
+- 是否进入下一轮：
+  - 若继续，应进入 `E2c`（tail-aware weighting）或回到 prior/proxy 组合诊断；不应直接进入 extension 层
+
+#### I. 下一步动作
+
+- 如果坚持 mismatch-first 主线，下一轮唯一合理改动应是 `tail-aware weighting`；否则应暂停方法迭代，重新诊断 `prior / proxy / surrogate` 的组合失配。
+
+---
+
+### [E2c - 2026-03-09-e2c-r1]
+
+**Date**: 2026-03-09  
+**Owner**: Jason + Codex  
+**Status**: done
+
+#### A. 这轮要回答什么问题
+
+- 在不动 `RA prior`、不动 `mean+dyn` proxy、也不动 `Soft-RBID + Huber` 主体的前提下，只加 `tail-aware weighting`，能否进一步压低 `Tail-RBID`？
+
+#### B. 核心假设
+
+- 如果当前问题主要集中在最差那一批 pair，那么按行为尾部加权的 soft-rank gap loss 应该优先修复这些 tail pair，从而让 `Tail-RBID` 至少相对 `E2b` 下降。
+
+#### C. 相比上一轮唯一主改动
+
+- 保持 `RA prior`、`mean+dyn` proxy、target-global pairwise protocol 和 `Soft-RBID + Huber` 不变，只把 `rank_loss_mode` 改成 `tail_soft_rbid_huber`，并启用：
+  - `rank_tail_weight = 2.0`
+  - `rank_tail_quantile = 0.25`
+
+#### D. 固定不变的控制项
+
+- Dataset: `BNCI2014001`
+- Representation: `pca_rank=48`, `quadratic`
+- Base aligner: `Conservative Koopman aligner-r48`
+- Behavior prior: `E0/RA pairwise transfer accuracy`
+- Rank score: `mean_dyn_neg_l2`
+- Pairwise protocol: `target-global pooled-source per target`
+
+#### E. 运行配置
+
+- Run dir: `results/e2c/2026-03-09-e2c-r1`
+- `rank_tau = 0.1`
+- `rank_huber_delta = 0.1`
+- `rank_tail_weight = 2.0`
+- `rank_tail_quantile = 0.25`
+
+#### F. 主结果
+
+| Metric | Value | vs Control |
+|---|---:|---:|
+| LOSO Accuracy | `0.4228` | `-0.0019` vs `E1` |
+| Pairwise RBID | `0.3095` | `+0.0159` vs refresh |
+| Pairwise Tail-RBID | `0.6234` | `+0.0043` vs refresh |
+| Pairwise Accuracy Mean | `0.3145` | `-0.0063` vs refresh |
+
+#### G. 诊断结果
+
+- 相对 `E2b`：
+  - `RBID` 不变
+  - `Tail-RBID` 不变
+  - `pairwise_accuracy_mean` 只有极小波动
+- 相对 `E2a`：
+  - `Tail-RBID` 仍更低，但这一下降已在 `E2b` 中发生，`E2c` 没有继续带来额外收益
+- 说明当前默认 tail weighting 只是重复了 `E2b` 已经达到的边界，没有进一步改变 mismatch 结构。
+
+#### H. 结论
+
+- 这轮支持什么：
+  - `tail-aware weighting` 在当前 prior/proxy 组合下不是决定性瓶颈
+- 这轮不支持什么：
+  - 不能说明继续沿 `E2c` 方向调权重就一定会得到主线进展
+  - 不能进入 `E3 / E4`
+- 是否进入下一轮：
+  - 不建议直接进入 extension 层；更合理的是回到 `behavior prior + representation proxy` 的组合重诊断
+
+#### I. 下一步动作
+
+- 如果继续做 method 层迭代，优先重审：
+  - `behavior prior` 是否仍该使用 `RA raw pairwise accuracy`
+  - `representation proxy` 是否该从 `mean+dyn` 升级到包含二阶统计的结构化分数
 
 ---
 

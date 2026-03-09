@@ -24,4 +24,4 @@
 - `results/ksda/exp_d1p5/2026-03-09-ksda-d1p5-r48-r3/summary.json` 与若干 CSV 为空；当前以 `docs/KSDA/21-exp-d1t-r48-d1p5-results-memo.md` 的人工结论为准，后续若重跑需补齐机器可读摘要。
 
 ## Status
-**Currently in Phase 5** - 已完成 `E2-ProxyDiag`，确认当前 `aligned mean cosine` 是首要瓶颈：它对真实 behavior 为负相关，明显弱于 `proxy_test_mean_neg_l2` 和 `proxy_test_cka`；下一步应做 `proxy replacement only`，而不是进入 `E3 / E4`。
+**Currently in Phase 5** - 已完成 `E2c`。结论是：只替换 proxy（`E2a`）、只替换 surrogate（`E2b`）、以及只加 tail weighting（`E2c`）都不足以救回 `E2`。当前更合理的下一步不是进入 `E3 / E4`，而是回到 `behavior prior + representation proxy` 组合本身重诊断。

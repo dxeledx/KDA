@@ -32,6 +32,12 @@ results/*
 !results/e1/**
 !results/e2/
 !results/e2/**
+!results/e2a/
+!results/e2a/**
+!results/e2b/
+!results/e2b/**
+!results/e2c/
+!results/e2c/**
 !results/e2_diag/
 !results/e2_diag/**
 !results/e2_proxy_diag/

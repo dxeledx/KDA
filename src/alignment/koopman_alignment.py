@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 import numpy as np
+import pandas as pd
 from pyriemann.utils.mean import mean_riemann
 from scipy.linalg import eigh
 from scipy.optimize import minimize
@@ -210,11 +211,57 @@ def _fit_linear_state_operator_blocks(
     return np.asarray(operator, dtype=np.float64)
 
 
+def _fit_optional_linear_state_operator(
+    state_block: np.ndarray,
+    ridge_alpha: float = 1.0e-3,
+) -> np.ndarray | None:
+    state_block = np.asarray(state_block, dtype=np.float64)
+    if state_block.ndim != 2 or state_block.shape[0] < 2:
+        return None
+    return _fit_linear_state_operator_blocks([state_block], ridge_alpha=ridge_alpha)
+
+
 def _decision_scores_from_lda(lda, features: np.ndarray) -> np.ndarray:
     scores = np.asarray(lda.model.decision_function(np.asarray(features, dtype=np.float64)), dtype=np.float64)
     if scores.ndim == 1:
         scores = scores[:, None]
     return scores
+
+
+def _ranknorm_vector(values: np.ndarray) -> np.ndarray:
+    values = np.asarray(values, dtype=np.float64)
+    order = np.argsort(values)
+    ranks = np.empty_like(values, dtype=np.float64)
+    if len(order) == 1:
+        ranks[order] = 1.0
+    else:
+        ranks[order] = np.linspace(0.0, 1.0, num=len(order), dtype=np.float64)
+    return ranks
+
+
+def _sigmoid(values: np.ndarray) -> np.ndarray:
+    values = np.asarray(values, dtype=np.float64)
+    return 1.0 / (1.0 + np.exp(-values))
+
+
+def _soft_ranks_and_jacobian(scores: np.ndarray, tau: float) -> tuple[np.ndarray, np.ndarray]:
+    scores = np.asarray(scores, dtype=np.float64)
+    tau = float(max(tau, 1.0e-6))
+    n = len(scores)
+    if n == 0:
+        return np.zeros(0, dtype=np.float64), np.zeros((0, 0), dtype=np.float64)
+    if n == 1:
+        return np.ones(1, dtype=np.float64), np.zeros((1, 1), dtype=np.float64)
+
+    delta = (scores[:, None] - scores[None, :]) / tau
+    probs = _sigmoid(delta)
+    soft_ranks = (probs.sum(axis=1) - 0.5) / float(n - 1)
+    sigma_grad = probs * (1.0 - probs) / tau
+
+    jacobian = -sigma_grad / float(n - 1)
+    diag = sigma_grad.sum(axis=1) - np.diag(sigma_grad)
+    np.fill_diagonal(jacobian, diag / float(n - 1))
+    return np.asarray(soft_ranks, dtype=np.float64), np.asarray(jacobian, dtype=np.float64)
 
 
 @dataclass
@@ -268,6 +315,14 @@ class KoopmanConservativeResidualAligner:
     lambda_cls: float = 1.0
     lambda_dyn: float = 1.0
     lambda_rank: float = 0.0
+    rank_score_mode: str = "mean_cosine"
+    rank_loss_mode: str = "pairwise_logistic"
+    rank_mean_weight: float = 1.0
+    rank_dyn_weight: float = 1.0
+    rank_tau: float = 0.1
+    rank_huber_delta: float = 0.1
+    rank_tail_weight: float = 0.0
+    rank_tail_quantile: float = 0.25
     lambda_reg: float = 1.0e-3
     ridge_alpha: float = 1.0e-3
     max_iter: int = 100
@@ -277,6 +332,7 @@ class KoopmanConservativeResidualAligner:
     basis_: np.ndarray | None = None
     residual_matrix_: np.ndarray | None = None
     source_operator_: np.ndarray | None = None
+    rank_source_operators_: list[np.ndarray | None] | None = None
     optimization_info_: dict | None = None
 
     def fit(
@@ -305,6 +361,10 @@ class KoopmanConservativeResidualAligner:
             raise ValueError("behavior_prior_scores are required when lambda_rank > 0.")
         if float(self.lambda_rank) > 0.0 and source_subject_ids is None:
             raise ValueError("source_subject_ids are required when lambda_rank > 0.")
+        if self.rank_score_mode not in {"mean_cosine", "mean_dyn_neg_l2"}:
+            raise ValueError(f"Unsupported rank_score_mode: {self.rank_score_mode}")
+        if self.rank_loss_mode not in {"pairwise_logistic", "soft_rbid_huber", "tail_soft_rbid_huber"}:
+            raise ValueError(f"Unsupported rank_loss_mode: {self.rank_loss_mode}")
 
         self.source_mean_ = source.mean(axis=0)
         self.target_mean_ = target.mean(axis=0)
@@ -321,6 +381,7 @@ class KoopmanConservativeResidualAligner:
         self.basis_ = basis
         rank = int(self.basis_.shape[1])
         self.residual_matrix_ = np.zeros((rank, rank), dtype=np.float64)
+        self.rank_source_operators_ = None
 
         if rank == 0 or int(self.max_iter) <= 0:
             self.optimization_info_ = {"success": True, "nit": 0, "message": "Skipped optimization"}
@@ -329,6 +390,11 @@ class KoopmanConservativeResidualAligner:
                     _split_blocks(source, source_block_lengths),
                     ridge_alpha=float(self.ridge_alpha),
                 )
+            if source_block_lengths is not None:
+                self.rank_source_operators_ = [
+                    _fit_optional_linear_state_operator(block, ridge_alpha=float(self.ridge_alpha))
+                    for block in _split_blocks(source, source_block_lengths)
+                ]
             return self
 
         centered_source = source - self.source_mean_
@@ -356,6 +422,10 @@ class KoopmanConservativeResidualAligner:
                 ridge_alpha=float(self.ridge_alpha),
             )
         self.source_operator_ = source_operator
+        self.rank_source_operators_ = [
+            _fit_optional_linear_state_operator(block, ridge_alpha=float(self.ridge_alpha))
+            for block in source_blocks
+        ]
 
         source_source_gram = source_low_rank.T @ source_low_rank / max(len(source_low_rank), 1)
         score_gram = score_basis @ score_basis.T
@@ -375,8 +445,10 @@ class KoopmanConservativeResidualAligner:
         kbasis = None if source_operator is None else source_operator @ self.basis_
         rank_pairs: list[tuple[int, int]] = []
         rank_behavior: np.ndarray | None = None
+        rank_behavior_targets: np.ndarray | None = None
         source_block_means = None
         source_block_center_means = None
+        source_block_low_rank_means = None
         target_mean_centered = centered_target.mean(axis=0)
         target_mean_low_rank = target_mean_centered @ self.basis_
         target_mean_base = self.source_mean_ + target_mean_centered
@@ -397,17 +469,20 @@ class KoopmanConservativeResidualAligner:
                 [float(behavior_prior_scores[int(subject_id)]) for subject_id in source_subject_ids_arr],
                 dtype=np.float64,
             )
+            rank_behavior_targets = _ranknorm_vector(rank_behavior)
             source_block_means = np.stack(
                 [np.asarray(block, dtype=np.float64).mean(axis=0) for block in source_blocks],
                 axis=0,
             )
             source_block_center_means = source_block_means - self.source_mean_
-            for idx in range(len(rank_behavior)):
-                for jdx in range(len(rank_behavior)):
-                    if rank_behavior[idx] > rank_behavior[jdx] and not np.isclose(
-                        rank_behavior[idx], rank_behavior[jdx]
-                    ):
-                        rank_pairs.append((idx, jdx))
+            source_block_low_rank_means = source_block_center_means @ self.basis_
+            if self.rank_loss_mode == "pairwise_logistic":
+                for idx in range(len(rank_behavior)):
+                    for jdx in range(len(rank_behavior)):
+                        if rank_behavior[idx] > rank_behavior[jdx] and not np.isclose(
+                            rank_behavior[idx], rank_behavior[jdx]
+                        ):
+                            rank_pairs.append((idx, jdx))
 
         def _loss_and_grad(flat_s: np.ndarray) -> tuple[float, np.ndarray]:
             s_matrix = flat_s.reshape(rank, rank)
@@ -435,42 +510,115 @@ class KoopmanConservativeResidualAligner:
                 loss_dyn = 0.0
                 grad_dyn = np.zeros_like(s_matrix)
 
-            if float(self.lambda_rank) > 0.0 and source_block_means is not None and rank_behavior is not None and rank_pairs:
-                sim_scores = []
-                sim_grads = []
+            if (
+                float(self.lambda_rank) > 0.0
+                and source_block_means is not None
+                and rank_behavior is not None
+                and (
+                    (self.rank_loss_mode == "pairwise_logistic" and rank_pairs)
+                    or self.rank_loss_mode in {"soft_rbid_huber", "tail_soft_rbid_huber"}
+                )
+            ):
+                rank_scores = []
+                rank_grads = []
                 target_mean = target_mean_base + target_mean_low_rank @ s_matrix @ self.basis_.T
-                target_norm = float(np.linalg.norm(target_mean) + 1.0e-8)
-                target_low_rank_term = target_mean_low_rank
-                for mean_source, centered_mean_source in zip(source_block_means, source_block_center_means):
-                    source_low_rank_mean = centered_mean_source @ self.basis_
-                    aligned_source_mean = mean_source + source_low_rank_mean @ s_matrix @ self.basis_.T
-                    source_norm = float(np.linalg.norm(aligned_source_mean) + 1.0e-8)
-                    cosine = float(aligned_source_mean @ target_mean) / (source_norm * target_norm)
-                    grad_source = (
-                        target_mean / (source_norm * target_norm)
-                        - cosine * aligned_source_mean / (source_norm**2)
-                    )
-                    grad_target = (
-                        aligned_source_mean / (source_norm * target_norm)
-                        - cosine * target_mean / (target_norm**2)
-                    )
-                    grad_s = (
-                        np.outer(source_low_rank_mean, grad_source @ self.basis_)
-                        + np.outer(target_low_rank_term, grad_target @ self.basis_)
-                    )
-                    sim_scores.append(cosine)
-                    sim_grads.append(grad_s)
+                if self.rank_score_mode == "mean_cosine":
+                    target_norm = float(np.linalg.norm(target_mean) + 1.0e-8)
+                    target_low_rank_term = target_mean_low_rank
+                    for mean_source, source_low_rank_mean in zip(source_block_means, source_block_low_rank_means):
+                        aligned_source_mean = mean_source + source_low_rank_mean @ s_matrix @ self.basis_.T
+                        source_norm = float(np.linalg.norm(aligned_source_mean) + 1.0e-8)
+                        cosine = float(aligned_source_mean @ target_mean) / (source_norm * target_norm)
+                        grad_source = (
+                            target_mean / (source_norm * target_norm)
+                            - cosine * aligned_source_mean / (source_norm**2)
+                        )
+                        grad_target = (
+                            aligned_source_mean / (source_norm * target_norm)
+                            - cosine * target_mean / (target_norm**2)
+                        )
+                        grad_s = (
+                            np.outer(source_low_rank_mean, grad_source @ self.basis_)
+                            + np.outer(target_low_rank_term, grad_target @ self.basis_)
+                        )
+                        rank_scores.append(cosine)
+                        rank_grads.append(grad_s)
+                else:
+                    dim_scale = float(source.shape[1])
+                    n_transitions = float(max(len(target_prev_low_rank), 1))
+                    for source_low_rank_mean, mean_source, operator_i in zip(
+                        source_block_low_rank_means,
+                        source_block_means,
+                        self.rank_source_operators_,
+                    ):
+                        mean_delta = (
+                            mean_source
+                            - target_mean_base
+                            + (source_low_rank_mean - target_mean_low_rank) @ s_matrix @ self.basis_.T
+                        )
+                        mean_sq_dist = float(np.mean(mean_delta * mean_delta))
+                        grad_mean = (
+                            2.0
+                            * np.outer(
+                                source_low_rank_mean - target_mean_low_rank,
+                                mean_delta @ self.basis_,
+                            )
+                            / dim_scale
+                        )
 
-                sim_scores_arr = np.asarray(sim_scores, dtype=np.float64)
-                loss_rank = 0.0
-                grad_rank = np.zeros_like(s_matrix)
-                for idx, jdx in rank_pairs:
-                    delta = float(sim_scores_arr[idx] - sim_scores_arr[jdx])
-                    loss_rank += float(np.logaddexp(0.0, -delta))
-                    coeff = -1.0 / (1.0 + float(np.exp(delta)))
-                    grad_rank += coeff * (sim_grads[idx] - sim_grads[jdx])
-                loss_rank /= float(len(rank_pairs))
-                grad_rank /= float(len(rank_pairs))
+                        if operator_i is not None and len(target_prev_low_rank) > 0:
+                            kbasis_i = operator_i @ self.basis_
+                            residual_i = target_next_base - target_prev_base @ operator_i.T
+                            residual_i = residual_i + target_next_low_rank @ s_matrix @ self.basis_.T
+                            residual_i = residual_i - target_prev_low_rank @ s_matrix @ kbasis_i.T
+                            dyn_resid = float(np.mean(residual_i * residual_i))
+                            grad_dyn_i = (
+                                2.0
+                                * (
+                                    target_next_low_rank.T @ residual_i @ self.basis_
+                                    - target_prev_low_rank.T @ residual_i @ kbasis_i
+                                )
+                                / n_transitions
+                                / dim_scale
+                            )
+                        else:
+                            dyn_resid = 0.0
+                            grad_dyn_i = np.zeros_like(s_matrix)
+
+                        score = (
+                            -float(self.rank_mean_weight) * mean_sq_dist
+                            - float(self.rank_dyn_weight) * dyn_resid
+                        )
+                        grad_score = (
+                            -float(self.rank_mean_weight) * grad_mean
+                            - float(self.rank_dyn_weight) * grad_dyn_i
+                        )
+                        rank_scores.append(score)
+                        rank_grads.append(grad_score)
+
+                rank_scores_arr = np.asarray(rank_scores, dtype=np.float64)
+                if self.rank_loss_mode == "pairwise_logistic":
+                    loss_rank = 0.0
+                    grad_rank = np.zeros_like(s_matrix)
+                    for idx, jdx in rank_pairs:
+                        delta = float(rank_scores_arr[idx] - rank_scores_arr[jdx])
+                        loss_rank += float(np.logaddexp(0.0, -delta))
+                        coeff = -1.0 / (1.0 + float(np.exp(delta)))
+                        grad_rank += coeff * (rank_grads[idx] - rank_grads[jdx])
+                    loss_rank /= float(len(rank_pairs))
+                    grad_rank /= float(len(rank_pairs))
+                else:
+                    loss_rank, score_coeffs = self.compute_soft_rbid_loss_and_score_coeffs(
+                        behavior_scores=rank_behavior,
+                        similarity_scores=rank_scores_arr,
+                        tau=float(self.rank_tau),
+                        huber_delta=float(self.rank_huber_delta),
+                        tail_weight=float(self.rank_tail_weight) if self.rank_loss_mode == "tail_soft_rbid_huber" else 0.0,
+                        tail_quantile=float(self.rank_tail_quantile),
+                    )
+                    grad_rank = np.zeros_like(s_matrix)
+                    for coeff, grad_score in zip(score_coeffs, rank_grads):
+                        grad_rank += float(coeff) * grad_score
             else:
                 loss_rank = 0.0
                 grad_rank = np.zeros_like(s_matrix)
@@ -517,6 +665,81 @@ class KoopmanConservativeResidualAligner:
         }
         return self
 
+    def compute_rank_score_components(
+        self,
+        *,
+        source_features: np.ndarray,
+        target_features: np.ndarray,
+        source_block_lengths: list[int] | tuple[int, ...] | np.ndarray,
+    ) -> pd.DataFrame:
+        if self.source_mean_ is None or self.target_mean_ is None or self.basis_ is None or self.residual_matrix_ is None:
+            raise RuntimeError("KoopmanConservativeResidualAligner is not fitted.")
+        if self.rank_score_mode not in {"mean_cosine", "mean_dyn_neg_l2"}:
+            raise ValueError(f"Unsupported rank_score_mode: {self.rank_score_mode}")
+
+        source = np.asarray(source_features, dtype=np.float64)
+        target = np.asarray(target_features, dtype=np.float64)
+        source_blocks = _split_blocks(source, source_block_lengths)
+        if self.rank_source_operators_ is None:
+            source_operators = [
+                _fit_optional_linear_state_operator(block, ridge_alpha=float(self.ridge_alpha))
+                for block in source_blocks
+            ]
+        else:
+            source_operators = list(self.rank_source_operators_)
+        if len(source_operators) != len(source_blocks):
+            raise ValueError("source_block_lengths length must match stored rank operators.")
+
+        basis = self.basis_
+        residual_matrix = self.residual_matrix_
+        target_centered = target - self.target_mean_
+        target_low_rank = target_centered @ basis
+        target_aligned = self.source_mean_ + target_centered + target_low_rank @ residual_matrix @ basis.T
+        target_mean = target_aligned.mean(axis=0)
+
+        if len(target_aligned) >= 2:
+            target_prev = target_aligned[:-1]
+            target_next = target_aligned[1:]
+        else:
+            target_prev = np.zeros((0, target.shape[1]), dtype=np.float64)
+            target_next = np.zeros((0, target.shape[1]), dtype=np.float64)
+
+        rows = []
+        for block_idx, (block, operator_i) in enumerate(zip(source_blocks, source_operators)):
+            block = np.asarray(block, dtype=np.float64)
+            block_centered = block - self.source_mean_
+            block_low_rank = block_centered @ basis
+            block_aligned = block + block_low_rank @ residual_matrix @ basis.T
+            source_mean = block_aligned.mean(axis=0)
+
+            if self.rank_score_mode == "mean_cosine":
+                mean_sq_dist = float("nan")
+                dyn_resid = float("nan")
+                source_norm = float(np.linalg.norm(source_mean) + 1.0e-8)
+                target_norm = float(np.linalg.norm(target_mean) + 1.0e-8)
+                u_score = float(source_mean @ target_mean) / (source_norm * target_norm)
+            else:
+                mean_sq_dist = float(np.mean((source_mean - target_mean) ** 2))
+                if operator_i is not None and len(target_prev) > 0:
+                    residual = target_next - target_prev @ operator_i.T
+                    dyn_resid = float(np.mean(residual * residual))
+                else:
+                    dyn_resid = 0.0
+                u_score = (
+                    -float(self.rank_mean_weight) * mean_sq_dist
+                    - float(self.rank_dyn_weight) * dyn_resid
+                )
+
+            rows.append(
+                {
+                    "block_index": int(block_idx),
+                    "mean_sq_dist": float(mean_sq_dist),
+                    "dyn_resid": float(dyn_resid),
+                    "u_score": float(u_score),
+                }
+            )
+        return pd.DataFrame(rows)
+
     def compute_rank_loss(self, behavior_scores: np.ndarray, similarity_scores: np.ndarray) -> float:
         behavior_scores = np.asarray(behavior_scores, dtype=np.float64)
         similarity_scores = np.asarray(similarity_scores, dtype=np.float64)
@@ -535,6 +758,71 @@ class KoopmanConservativeResidualAligner:
         if not losses:
             return 0.0
         return float(np.mean(losses))
+
+    @staticmethod
+    def compute_rank_targets(behavior_scores: np.ndarray) -> np.ndarray:
+        return _ranknorm_vector(np.asarray(behavior_scores, dtype=np.float64))
+
+    @staticmethod
+    def compute_soft_ranks(similarity_scores: np.ndarray, tau: float = 0.1) -> np.ndarray:
+        ranks, _ = _soft_ranks_and_jacobian(np.asarray(similarity_scores, dtype=np.float64), float(tau))
+        return ranks
+
+    @staticmethod
+    def compute_soft_rbid_loss_and_score_coeffs(
+        behavior_scores: np.ndarray,
+        similarity_scores: np.ndarray,
+        tau: float = 0.1,
+        huber_delta: float = 0.1,
+        tail_weight: float = 0.0,
+        tail_quantile: float = 0.25,
+    ) -> tuple[float, np.ndarray]:
+        behavior_targets = KoopmanConservativeResidualAligner.compute_rank_targets(behavior_scores)
+        rep_ranks, jacobian = _soft_ranks_and_jacobian(
+            np.asarray(similarity_scores, dtype=np.float64),
+            float(tau),
+        )
+        diff = rep_ranks - behavior_targets
+        delta = float(max(huber_delta, 1.0e-8))
+        abs_diff = np.abs(diff)
+        losses = np.where(
+            abs_diff <= delta,
+            0.5 * diff * diff,
+            delta * (abs_diff - 0.5 * delta),
+        )
+        grad_rep_ranks = np.where(abs_diff <= delta, diff, delta * np.sign(diff))
+        if float(tail_weight) > 0.0 and len(behavior_targets) > 0:
+            cutoff = float(np.quantile(behavior_targets, float(tail_quantile)))
+            weights = np.where(
+                behavior_targets <= cutoff,
+                1.0 + float(tail_weight),
+                1.0,
+            )
+        else:
+            weights = np.ones_like(losses, dtype=np.float64)
+        weight_norm = float(np.sum(weights)) if len(weights) > 0 else 1.0
+        loss = float(np.sum(weights * losses) / weight_norm) if len(losses) > 0 else 0.0
+        coeffs = jacobian.T @ ((weights * grad_rep_ranks) / weight_norm)
+        return loss, np.asarray(coeffs, dtype=np.float64)
+
+    @staticmethod
+    def compute_soft_rbid_loss(
+        behavior_scores: np.ndarray,
+        similarity_scores: np.ndarray,
+        tau: float = 0.1,
+        huber_delta: float = 0.1,
+        tail_weight: float = 0.0,
+        tail_quantile: float = 0.25,
+    ) -> float:
+        loss, _ = KoopmanConservativeResidualAligner.compute_soft_rbid_loss_and_score_coeffs(
+            behavior_scores=behavior_scores,
+            similarity_scores=similarity_scores,
+            tau=tau,
+            huber_delta=huber_delta,
+            tail_weight=tail_weight,
+            tail_quantile=tail_quantile,
+        )
+        return float(loss)
 
     def transform_source(self, features: np.ndarray) -> np.ndarray:
         if self.source_mean_ is None or self.basis_ is None or self.residual_matrix_ is None:

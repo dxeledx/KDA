@@ -1,0 +1,124 @@
+{
+  "run_dir": "results/e2c/2026-03-09-e2c-r1",
+  "representation": {
+    "pca_rank": 48,
+    "lifting": "quadratic"
+  },
+  "rank_score_mode": "mean_dyn_neg_l2",
+  "rank_loss_mode": "tail_soft_rbid_huber",
+  "rank_mean_weight": 1.0,
+  "rank_dyn_weight": 1.0,
+  "rank_tau": 0.1,
+  "rank_huber_delta": 0.1,
+  "rank_tail_weight": 2.0,
+  "rank_tail_quantile": 0.25,
+  "control_loso_e1": {
+    "method": "Conservative Koopman aligner-r48",
+    "accuracy_mean": 0.42476851851851855,
+    "accuracy_std": 0.13713079992685903,
+    "kappa_mean": 0.2330246913580247,
+    "kappa_std": 0.1828410665691454,
+    "rbid": 0.3055555555555556,
+    "rbid_pos": 0.1527777777777778,
+    "rbid_neg": 0.1527777777777778,
+    "tail_rbid": 0.5502645502645502,
+    "pearson_r": 0.2505552458334039
+  },
+  "control_pairwise_refresh": {
+    "method": "Conservative Koopman aligner-r48 (target-global refresh)",
+    "method_key": "conservative-koopman-aligner-r48-target-global-refresh",
+    "rbid": 0.2936507936507936,
+    "rbid_pos": 0.14682539682539683,
+    "rbid_neg": 0.14682539682539683,
+    "tail_rbid": 0.6190476190476191,
+    "pearson_r": 0.3579490873639866,
+    "pairwise_accuracy_mean": 0.32084297839506176
+  },
+  "secondary_control_e2": {
+    "method": "RBID-aware Conservative Koopman aligner-r48",
+    "accuracy_mean": 0.4232253086419753,
+    "accuracy_std": 0.13781534367215656,
+    "kappa_mean": 0.2309670781893004,
+    "kappa_std": 0.1837537915628754,
+    "rbid": 0.30952380952380953,
+    "rbid_pos": 0.15476190476190477,
+    "rbid_neg": 0.15476190476190477,
+    "tail_rbid": 0.6233766233766234,
+    "pearson_r": 0.3696467160602598,
+    "pairwise_accuracy_mean": 0.31486304012345673
+  },
+  "secondary_control_e2a": {
+    "method": "RBID-aware Conservative Koopman aligner-r48 (mean+dyn proxy)",
+    "accuracy_mean": 0.4228395061728395,
+    "accuracy_std": 0.13735895387712982,
+    "kappa_mean": 0.23045267489711938,
+    "kappa_std": 0.1831452718361731,
+    "rbid": 0.3095238095238095,
+    "rbid_pos": 0.15476190476190477,
+    "rbid_neg": 0.15476190476190477,
+    "tail_rbid": 0.6326530612244897,
+    "pearson_r": 0.36955588014406165,
+    "pairwise_accuracy_mean": 0.314573688271605
+  },
+  "secondary_control_e2b": {
+    "method": "RBID-aware Conservative Koopman aligner-r48 (Soft-RBID)",
+    "accuracy_mean": 0.42129629629629634,
+    "accuracy_std": 0.13616026252563332,
+    "kappa_mean": 0.22839506172839505,
+    "kappa_std": 0.18154701670084442,
+    "rbid": 0.3095238095238095,
+    "rbid_pos": 0.15476190476190477,
+    "rbid_neg": 0.15476190476190477,
+    "tail_rbid": 0.6233766233766234,
+    "pearson_r": 0.37119704819075694,
+    "pairwise_accuracy_mean": 0.314477237654321
+  },
+  "e2c_tail_soft_rbid": {
+    "method": "RBID-aware Conservative Koopman aligner-r48 (Tail-Soft-RBID)",
+    "accuracy_mean": 0.4228395061728395,
+    "accuracy_std": 0.13742476742188878,
+    "kappa_mean": 0.23045267489711938,
+    "kappa_std": 0.18323302322918503,
+    "rbid": 0.3095238095238095,
+    "rbid_pos": 0.15476190476190477,
+    "rbid_neg": 0.15476190476190477,
+    "tail_rbid": 0.6233766233766234,
+    "pearson_r": 0.3709242797066522,
+    "pairwise_accuracy_mean": 0.31452546296296297
+  },
+  "delta_vs_e1_loso": {
+    "accuracy_mean": -0.0019290123456790487,
+    "kappa_mean": -0.002572016460905324
+  },
+  "delta_vs_refresh_pairwise": {
+    "rbid": 0.015873015873015872,
+    "tail_rbid": 0.0043290043290042934,
+    "pearson_r": 0.012975192342665587,
+    "pairwise_accuracy_mean": -0.006317515432098797
+  },
+  "delta_vs_e2_pairwise": {
+    "rbid": -5.551115123125783e-17,
+    "tail_rbid": 0.0,
+    "pearson_r": 0.0012775636463924211,
+    "pairwise_accuracy_mean": -0.00033757716049376274
+  },
+  "delta_vs_e2a_pairwise": {
+    "rbid": 0.0,
+    "tail_rbid": -0.009276437847866359,
+    "pearson_r": 0.0013683995625905498,
+    "pairwise_accuracy_mean": -4.822530864201369e-05
+  },
+  "delta_vs_e2b_pairwise": {
+    "rbid": 0.0,
+    "tail_rbid": 0.0,
+    "pearson_r": -0.0002727684841047351,
+    "pairwise_accuracy_mean": 4.8225308641958176e-05
+  },
+  "gate": {
+    "accuracy_pass": false,
+    "rbid_pass": false,
+    "tail_rbid_pass": false,
+    "ready_for_e3_like_extensions": false
+  },
+  "elapsed_sec": 38.78994195899577
+}

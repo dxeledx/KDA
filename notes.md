@@ -112,3 +112,54 @@
   - 当前主瓶颈已经基本锁定在 **similarity proxy**，而不是 `RA prior`。
   - train-mean cosine 这条线应当停止继续投入。
   - 下一步最合理的是做一个 **proxy replacement only** 版本，先保持 `RA prior` 不变。
+
+## E2a 结果（2026-03-09）
+- 运行目录：`results/e2a/2026-03-09-e2a-r1`
+- 改动：
+  - 保持 `RA prior`、target-global pairwise protocol、当前 pairwise logistic ranking loss 不变；
+  - 只把 training proxy 从 `aligned mean cosine` 换成 `mean+dyn` 结构化 score。
+- 结果：
+  - `LOSO accuracy = 0.4228`，低于 `E1` 的 `0.4248`
+  - `pairwise RBID = 0.3095`，高于 refreshed baseline 的 `0.2937`
+  - `pairwise Tail-RBID = 0.6327`，高于 refreshed baseline 的 `0.6190`
+  - `pairwise accuracy mean = 0.3146`，低于 refreshed baseline 的 `0.3208`
+- 这说明：
+  - `aligned mean cosine` 确实不是好 proxy，但当前 `mean+dyn` 替换版也没有把 E2 救回来。
+  - 因此下一步不应继续做“只换 proxy”的路线，而应进入 `E2b`：优先修改 surrogate 形式本身。
+
+## E2b 结果（2026-03-09）
+- 运行目录：`results/e2b/2026-03-09-e2b-r1`
+- 改动：
+  - 保持 `RA prior`、`mean+dyn` proxy、target-global pairwise protocol 不变；
+  - 只把 mismatch surrogate 从 `pairwise logistic` 换成 `Soft-RBID + Huber`。
+- 结果：
+  - `LOSO accuracy = 0.4213`，低于 `E1` 的 `0.4248`
+  - `pairwise RBID = 0.3095`，高于 refreshed baseline 的 `0.2937`
+  - `pairwise Tail-RBID = 0.6234`，高于 refreshed baseline 的 `0.6190`
+  - `pairwise accuracy mean = 0.3145`，低于 refreshed baseline 的 `0.3208`
+- 相对 `E2a`：
+  - `RBID` 没有改善
+  - `Tail-RBID` 略有回落（`0.6327 -> 0.6234`）
+  - `pairwise accuracy mean` 仍略降
+- 这说明：
+  - surrogate 形式本身确实影响了一部分 tail 行为，但目前仍不足以把方法拉回到 refreshed baseline 之上。
+  - 当前更像是：`proxy / prior / surrogate` 三者耦合问题，而不是某一个单点替换就能解决。
+
+## E2c 结果（2026-03-09）
+- 运行目录：`results/e2c/2026-03-09-e2c-r1`
+- 改动：
+  - 保持 `RA prior`、`mean+dyn` proxy、`Soft-RBID + Huber` 不变；
+  - 只加 `tail-aware weighting`，默认 `rank_tail_weight = 2.0`、`rank_tail_quantile = 0.25`。
+- 结果：
+  - `LOSO accuracy = 0.4228`，仍低于 `E1` 的 `0.4248`
+  - `pairwise RBID = 0.3095`，仍高于 refreshed baseline 的 `0.2937`
+  - `pairwise Tail-RBID = 0.6234`，与 `E2b` 持平
+  - `pairwise accuracy mean = 0.3145`，仍低于 refreshed baseline 的 `0.3208`
+- 相对 `E2b`：
+  - `RBID` 不变
+  - `Tail-RBID` 不变
+  - `pairwise accuracy mean` 只有极小变化
+- 这说明：
+  - 当前默认 tail weighting 没有提供额外收益；
+  - 到 `E2c` 为止，单独改 proxy、单独改 surrogate、单独加 tail weighting 都不够。
+  - 研究上更合理的下一步应回到 `behavior prior + representation proxy` 组合本身，而不是继续堆 extension 层实验。
