@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
@@ -31,7 +32,15 @@ def _save_summary(df: pd.DataFrame, path: Path) -> None:
     path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
 
 
-def main() -> None:
+def build_argparser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--out-dir", default="results/baselines/ra")
+    parser.add_argument("--fig-dir", default="results/figures")
+    return parser
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = build_argparser().parse_args(argv)
     exp_cfg = load_yaml("configs/experiment_config.yaml")
     seed_everything(int(exp_cfg["experiment"]["seed"]))
 
@@ -48,8 +57,8 @@ def main() -> None:
     lda_kwargs = model_cfg["lda"]
     cov_eps = float(model_cfg.get("alignment", {}).get("eps", 1.0e-6))
 
-    out_dir = ensure_dir("results/baselines/ra")
-    fig_dir = ensure_dir("results/figures")
+    out_dir = ensure_dir(args.out_dir)
+    fig_dir = ensure_dir(args.fig_dir)
 
     logger.info("Running within-subject evaluation...")
     within_df = evaluate_within_subject(loader, subjects, pre, csp_kwargs, lda_kwargs)

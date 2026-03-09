@@ -5,6 +5,7 @@ from dataclasses import dataclass
 import numpy as np
 from pyriemann.utils.mean import mean_riemann
 from scipy.linalg import eigh
+from scipy.optimize import minimize
 from sklearn.decomposition import PCA
 
 from src.alignment.euclidean import matrix_power_spd
@@ -167,6 +168,55 @@ def _fit_linear_directions(X_centered: np.ndarray, y: np.ndarray, reg_lambda: fl
     return np.asarray(weights, dtype=np.float64)
 
 
+def _split_blocks(states: np.ndarray, block_lengths: list[int] | tuple[int, ...] | np.ndarray) -> list[np.ndarray]:
+    states = np.asarray(states, dtype=np.float64)
+    lengths = [int(length) for length in block_lengths]
+    if not lengths:
+        raise ValueError("source_block_lengths must not be empty.")
+    if any(length <= 0 for length in lengths):
+        raise ValueError(f"Invalid source_block_lengths: {lengths}")
+    if int(sum(lengths)) != int(states.shape[0]):
+        raise ValueError(
+            f"source_block_lengths must sum to {states.shape[0]}, got {sum(lengths)}"
+        )
+
+    blocks = []
+    start = 0
+    for length in lengths:
+        blocks.append(states[start : start + length])
+        start += length
+    return blocks
+
+
+def _fit_linear_state_operator_blocks(
+    state_blocks: list[np.ndarray],
+    ridge_alpha: float = 1.0e-3,
+) -> np.ndarray:
+    prev_blocks, next_blocks = [], []
+    for block in state_blocks:
+        block = np.asarray(block, dtype=np.float64)
+        if block.ndim != 2 or block.shape[0] < 2:
+            continue
+        prev_blocks.append(block[:-1])
+        next_blocks.append(block[1:])
+
+    if not prev_blocks:
+        raise ValueError("Need at least one valid source block with two states.")
+
+    prev = np.concatenate(prev_blocks, axis=0)
+    nxt = np.concatenate(next_blocks, axis=0)
+    gram = prev.T @ prev + float(ridge_alpha) * np.eye(prev.shape[1], dtype=np.float64)
+    operator = (nxt.T @ prev) @ np.linalg.pinv(gram)
+    return np.asarray(operator, dtype=np.float64)
+
+
+def _decision_scores_from_lda(lda, features: np.ndarray) -> np.ndarray:
+    scores = np.asarray(lda.model.decision_function(np.asarray(features, dtype=np.float64)), dtype=np.float64)
+    if scores.ndim == 1:
+        scores = scores[:, None]
+    return scores
+
+
 @dataclass
 class KoopmanFeatureProjector:
     pca_rank: int = 16
@@ -208,6 +258,195 @@ class KoopmanFeatureProjector:
 
     def transform(self, covariances: np.ndarray) -> np.ndarray:
         return _apply_lifting(self.transform_tangent(covariances), self.lifting)
+
+
+@dataclass
+class KoopmanConservativeResidualAligner:
+    residual_rank: int = 8
+    basis_k: int = 32
+    basis_reg_lambda: float = 1.0e-4
+    lambda_cls: float = 1.0
+    lambda_dyn: float = 1.0
+    lambda_reg: float = 1.0e-3
+    ridge_alpha: float = 1.0e-3
+    max_iter: int = 100
+    tol: float = 1.0e-7
+    source_mean_: np.ndarray | None = None
+    target_mean_: np.ndarray | None = None
+    basis_: np.ndarray | None = None
+    residual_matrix_: np.ndarray | None = None
+    source_operator_: np.ndarray | None = None
+    optimization_info_: dict | None = None
+
+    def fit(
+        self,
+        source_features: np.ndarray,
+        target_features: np.ndarray,
+        *,
+        y_source: np.ndarray,
+        source_block_lengths: list[int] | tuple[int, ...] | np.ndarray | None = None,
+    ) -> "KoopmanConservativeResidualAligner":
+        source = np.asarray(source_features, dtype=np.float64)
+        target = np.asarray(target_features, dtype=np.float64)
+        y_source = np.asarray(y_source, dtype=np.int64)
+
+        if source.ndim != 2 or target.ndim != 2:
+            raise ValueError(f"Expected 2D feature matrices, got {source.shape} and {target.shape}")
+        if source.shape[1] != target.shape[1]:
+            raise ValueError(f"Feature dimension mismatch: {source.shape} vs {target.shape}")
+        if len(source) != len(y_source):
+            raise ValueError(f"y_source length mismatch: {len(source)} vs {len(y_source)}")
+        if float(self.lambda_dyn) > 0.0 and source_block_lengths is None:
+            raise ValueError("source_block_lengths are required when lambda_dyn > 0.")
+
+        self.source_mean_ = source.mean(axis=0)
+        self.target_mean_ = target.mean(axis=0)
+
+        basis_aligner = build_supervised_aligner(
+            "A1",
+            k=max(int(self.basis_k), int(self.residual_rank)),
+            reg_lambda=float(self.basis_reg_lambda),
+            normalize_output=False,
+        ).fit(source, y_source)
+        basis = np.asarray(basis_aligner.projection_[:, : min(int(self.residual_rank), basis_aligner.projection_.shape[1])], dtype=np.float64)
+        if basis.size == 0:
+            basis = np.zeros((source.shape[1], 0), dtype=np.float64)
+        self.basis_ = basis
+        rank = int(self.basis_.shape[1])
+        self.residual_matrix_ = np.zeros((rank, rank), dtype=np.float64)
+
+        if rank == 0 or int(self.max_iter) <= 0:
+            self.optimization_info_ = {"success": True, "nit": 0, "message": "Skipped optimization"}
+            if float(self.lambda_dyn) > 0.0 and source_block_lengths is not None:
+                self.source_operator_ = _fit_linear_state_operator_blocks(
+                    _split_blocks(source, source_block_lengths),
+                    ridge_alpha=float(self.ridge_alpha),
+                )
+            return self
+
+        centered_source = source - self.source_mean_
+        centered_target = target - self.target_mean_
+        source_low_rank = centered_source @ self.basis_
+        target_low_rank = centered_target @ self.basis_
+
+        from src.models.classifiers import LDA
+
+        lda = LDA().fit(source, y_source)
+        coef = np.asarray(lda.model.coef_, dtype=np.float64)
+        if coef.ndim == 1:
+            coef = coef[None, :]
+        score_basis = self.basis_.T @ coef.T
+
+        source_operator = None
+        if float(self.lambda_dyn) > 0.0:
+            source_blocks = _split_blocks(source, source_block_lengths)
+            source_operator = _fit_linear_state_operator_blocks(
+                source_blocks,
+                ridge_alpha=float(self.ridge_alpha),
+            )
+        self.source_operator_ = source_operator
+
+        source_source_gram = source_low_rank.T @ source_low_rank / max(len(source_low_rank), 1)
+        score_gram = score_basis @ score_basis.T
+
+        target_base = centered_target + self.source_mean_
+        if len(target) >= 2:
+            target_prev_low_rank = target_low_rank[:-1]
+            target_next_low_rank = target_low_rank[1:]
+            target_prev_base = target_base[:-1]
+            target_next_base = target_base[1:]
+        else:
+            target_prev_low_rank = np.zeros((0, rank), dtype=np.float64)
+            target_next_low_rank = np.zeros((0, rank), dtype=np.float64)
+            target_prev_base = np.zeros((0, source.shape[1]), dtype=np.float64)
+            target_next_base = np.zeros((0, source.shape[1]), dtype=np.float64)
+
+        kbasis = None if source_operator is None else source_operator @ self.basis_
+
+        def _loss_and_grad(flat_s: np.ndarray) -> tuple[float, np.ndarray]:
+            s_matrix = flat_s.reshape(rank, rank)
+
+            delta_scores = source_low_rank @ s_matrix @ score_basis
+            loss_cls = float(np.mean(delta_scores * delta_scores))
+            grad_cls = (
+                2.0 * source_source_gram @ s_matrix @ score_gram
+            )
+
+            if source_operator is not None and len(target_prev_low_rank) > 0:
+                residual = target_next_base - target_prev_base @ source_operator.T
+                residual = residual + target_next_low_rank @ s_matrix @ self.basis_.T
+                residual = residual - target_prev_low_rank @ s_matrix @ kbasis.T
+                loss_dyn = float(np.mean(residual * residual))
+                grad_dyn = (
+                    2.0
+                    * (
+                        target_next_low_rank.T @ residual @ self.basis_
+                        - target_prev_low_rank.T @ residual @ kbasis
+                    )
+                    / len(target_prev_low_rank)
+                )
+            else:
+                loss_dyn = 0.0
+                grad_dyn = np.zeros_like(s_matrix)
+
+            loss_reg = float(np.sum(s_matrix * s_matrix))
+            grad_reg = 2.0 * s_matrix
+
+            total_loss = (
+                float(self.lambda_cls) * loss_cls
+                + float(self.lambda_dyn) * loss_dyn
+                + float(self.lambda_reg) * loss_reg
+            )
+            total_grad = (
+                float(self.lambda_cls) * grad_cls
+                + float(self.lambda_dyn) * grad_dyn
+                + float(self.lambda_reg) * grad_reg
+            )
+            return total_loss, total_grad.reshape(-1)
+
+        def _objective(flat_s: np.ndarray) -> float:
+            loss, _ = _loss_and_grad(flat_s)
+            return loss
+
+        def _gradient(flat_s: np.ndarray) -> np.ndarray:
+            _, grad = _loss_and_grad(flat_s)
+            return grad
+
+        init = np.zeros(rank * rank, dtype=np.float64)
+        result = minimize(
+            _objective,
+            init,
+            method="L-BFGS-B",
+            jac=_gradient,
+            options={"maxiter": int(self.max_iter), "ftol": float(self.tol)},
+        )
+        self.residual_matrix_ = np.asarray(result.x.reshape(rank, rank), dtype=np.float64)
+        self.optimization_info_ = {
+            "success": bool(result.success),
+            "nit": int(result.nit),
+            "fun": float(result.fun),
+            "message": str(result.message),
+        }
+        return self
+
+    def transform_source(self, features: np.ndarray) -> np.ndarray:
+        if self.source_mean_ is None or self.basis_ is None or self.residual_matrix_ is None:
+            raise RuntimeError("KoopmanConservativeResidualAligner is not fitted.")
+        features = np.asarray(features, dtype=np.float64)
+        centered = features - self.source_mean_
+        residual = centered @ self.basis_ @ self.residual_matrix_ @ self.basis_.T
+        return np.asarray(features + residual, dtype=np.float64)
+
+    def transform_target(self, features: np.ndarray) -> np.ndarray:
+        if self.source_mean_ is None or self.target_mean_ is None or self.basis_ is None or self.residual_matrix_ is None:
+            raise RuntimeError("KoopmanConservativeResidualAligner is not fitted.")
+        features = np.asarray(features, dtype=np.float64)
+        centered = features - self.target_mean_
+        residual = centered @ self.basis_ @ self.residual_matrix_ @ self.basis_.T
+        return np.asarray(self.source_mean_ + centered + residual, dtype=np.float64)
+
+    def transform(self, features: np.ndarray) -> np.ndarray:
+        return self.transform_target(features)
 
 
 @dataclass

@@ -1,11 +1,16 @@
 #!/usr/bin/env python3
 from __future__ import annotations
 
+import argparse
 import json
 import sys
 from pathlib import Path
 from typing import Dict, List, Tuple
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from scipy.stats import pearsonr
@@ -32,12 +37,39 @@ from src.utils.logger import get_logger
 
 logger = get_logger("phenomenon_verification")
 
+DEFAULT_CLASSICAL_ROOT = Path("results/baselines")
+DEFAULT_OUTPUT_ROOT = Path("results/figures")
+DEFAULT_KOOPMAN_LIFTING = "quadratic"
+
+
+def build_argparser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--classical-root", default=str(DEFAULT_CLASSICAL_ROOT))
+    parser.add_argument("--output-root", default=str(DEFAULT_OUTPUT_ROOT))
+    parser.add_argument("--koopman-pca-rank", type=int, default=16)
+    return parser
+
 
 def _load_transfer_matrix(baseline_dir: Path, key: str) -> np.ndarray:
     path = baseline_dir / f"transfer_{key}.npy"
     if not path.exists():
         raise FileNotFoundError(f"Missing baseline output: {path}")
     return np.load(path)
+
+
+def _load_metric_summary(path: Path) -> Dict[str, Dict[str, float]]:
+    if not path.exists():
+        raise FileNotFoundError(f"Missing summary output: {path}")
+    return json.loads(path.read_text(encoding="utf-8"))
+
+
+def _save_metric_summary(df: pd.DataFrame, path: Path) -> None:
+    summary = {
+        col: {"mean": float(df[col].mean()), "std": float(df[col].std(ddof=1)) if len(df) > 1 else 0.0}
+        for col in ["accuracy", "kappa", "f1_macro"]
+        if col in df.columns
+    }
+    path.write_text(json.dumps(summary, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
 def _compute_domain_mean(
@@ -70,8 +102,8 @@ def _compute_koopman_pairwise_transfer(
     lda_kwargs: Dict,
     cov_eps: float,
     mode: str,
-    pca_rank: int = 16,
-    lifting: str = "quadratic",
+    pca_rank: int,
+    lifting: str,
 ) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
     from src.evaluation.metrics import compute_metrics
     from src.models.classifiers import LDA
@@ -116,7 +148,110 @@ def _compute_koopman_pairwise_transfer(
     return acc, kappa, f1
 
 
-def main() -> None:
+def _compute_koopman_loso(
+    loader: BCIDataLoader,
+    subjects: List[int],
+    pre: Preprocessor,
+    lda_kwargs: Dict,
+    cov_eps: float,
+    mode: str,
+    pca_rank: int,
+    lifting: str,
+) -> pd.DataFrame:
+    from src.evaluation.metrics import compute_metrics
+    from src.models.classifiers import LDA
+
+    rows = []
+    for target in subjects:
+        X_source_blocks, y_source_blocks = [], []
+        for subject in subjects:
+            if subject == target:
+                continue
+            X_train_subject, y_train_subject = loader.load_subject(subject, split="train")
+            X_source_blocks.append(X_train_subject)
+            y_source_blocks.append(y_train_subject)
+
+        X_source = np.concatenate(X_source_blocks, axis=0)
+        y_source = np.concatenate(y_source_blocks, axis=0)
+        X_target_train, _ = loader.load_subject(target, split="train")
+        X_target_test, y_target_test = loader.load_subject(target, split="test")
+
+        X_source = pre.fit(X_source, y_source).transform(X_source)
+        X_target_train = pre.transform(X_target_train)
+        X_target_test = pre.transform(X_target_test)
+
+        cov_source = compute_covariances(X_source, eps=cov_eps)
+        cov_target_train = compute_covariances(X_target_train, eps=cov_eps)
+        cov_target_test = compute_covariances(X_target_test, eps=cov_eps)
+
+        projector = KoopmanFeatureProjector(pca_rank=pca_rank, lifting=lifting).fit(cov_source)
+        psi_source = projector.transform(cov_source)
+        psi_target_train = projector.transform(cov_target_train)
+        psi_target_test = projector.transform(cov_target_test)
+
+        if mode == "static-koopman-aligner":
+            aligner = build_supervised_aligner(
+                "A1", k=32, reg_lambda=1.0e-4, normalize_output=True
+            ).fit(psi_source, y_source)
+            psi_source = aligner.transform(psi_source)
+            _ = aligner.transform(psi_target_train)
+            psi_target_test = aligner.transform(psi_target_test)
+
+        lda = LDA(**lda_kwargs).fit(psi_source, y_source)
+        y_pred = lda.predict(psi_target_test)
+        metrics = compute_metrics(y_target_test, y_pred)
+        rows.append({"target_subject": target, **metrics})
+
+    return pd.DataFrame(rows).sort_values("target_subject").reset_index(drop=True)
+
+
+def _phenomenon_methods(pca_rank: int) -> List[Tuple[str, str]]:
+    _ = pca_rank
+    return [
+        ("noalign", "No Alignment"),
+        ("ea", "EA"),
+        ("ra", "RA"),
+        ("koopman-noalign", "Koopman-noalign"),
+        ("static-koopman-aligner", "Static Koopman aligner"),
+    ]
+
+
+def _loso_summary_row(
+    method_name: str,
+    method_key: str,
+    loso_df: pd.DataFrame,
+    pca_rank: int | None,
+    lifting: str | None,
+) -> Dict[str, object]:
+    row: Dict[str, object] = {
+        "method": method_name,
+        "method_key": method_key,
+        "accuracy_mean": float(loso_df["accuracy"].mean()),
+        "accuracy_std": float(loso_df["accuracy"].std(ddof=1)) if len(loso_df) > 1 else 0.0,
+        "kappa_mean": float(loso_df["kappa"].mean()),
+        "kappa_std": float(loso_df["kappa"].std(ddof=1)) if len(loso_df) > 1 else 0.0,
+        "f1_macro_mean": float(loso_df["f1_macro"].mean()),
+        "f1_macro_std": float(loso_df["f1_macro"].std(ddof=1)) if len(loso_df) > 1 else 0.0,
+        "koopman_pca_rank": pca_rank,
+        "lifting": lifting,
+    }
+    return row
+
+
+def _methods_root(output_root: Path) -> Path:
+    if output_root == DEFAULT_OUTPUT_ROOT:
+        return DEFAULT_CLASSICAL_ROOT
+    return ensure_dir(output_root / "methods")
+
+
+def main(argv: list[str] | None = None) -> None:
+    args = build_argparser().parse_args(argv)
+    classical_root = Path(args.classical_root)
+    output_root = ensure_dir(args.output_root)
+    methods_root = _methods_root(output_root)
+    koopman_pca_rank = int(args.koopman_pca_rank)
+    koopman_lifting = DEFAULT_KOOPMAN_LIFTING
+
     exp_cfg = load_yaml("configs/experiment_config.yaml")
     seed_everything(int(exp_cfg["experiment"]["seed"]))
 
@@ -131,8 +266,7 @@ def main() -> None:
 
     cov_eps = float(model_cfg.get("alignment", {}).get("eps", 1.0e-6))
     csp_kwargs = model_cfg["csp"]
-
-    ensure_dir("results/figures")
+    lda_kwargs = model_cfg["lda"]
 
     # Covariance heatmaps (A01, A05, A09)
     cov_subjects = [1, 5, 9]
@@ -147,27 +281,23 @@ def main() -> None:
     plot_covariance_heatmaps(
         cov_means,
         cov_labels,
-        save_path="results/figures/covariance_heatmaps.pdf",
+        save_path=output_root / "covariance_heatmaps.pdf",
     )
 
-    methods: List[Tuple[str, str]] = [
-        ("noalign", "No Alignment"),
-        ("ea", "EA"),
-        ("ra", "RA"),
-        ("koopman-noalign", "Koopman-noalign"),
-        ("static-koopman-aligner", "Static Koopman aligner"),
-    ]
-
-    correlations = []
+    methods = _phenomenon_methods(koopman_pca_rank)
+    correlations: List[float] = []
     rbid_rows = []
+    loso_rows = []
     all_pair_rows = []
+
     for method, method_name in methods:
         logger.info("Computing phenomenon metrics for %s...", method_name)
-        baseline_dir = Path(f"results/baselines/{method}")
-        baseline_dir.mkdir(parents=True, exist_ok=True)
+        if method in ("noalign", "ea", "ra"):
+            baseline_dir = classical_root / method
+        else:
+            baseline_dir = ensure_dir(methods_root / method)
 
         if method in ("koopman-noalign", "static-koopman-aligner"):
-            lda_kwargs = model_cfg["lda"]
             acc_mat, kappa_mat, f1_mat = _compute_koopman_pairwise_transfer(
                 loader,
                 subjects,
@@ -175,14 +305,56 @@ def main() -> None:
                 lda_kwargs,
                 cov_eps,
                 mode=method,
+                pca_rank=koopman_pca_rank,
+                lifting=koopman_lifting,
             )
             np.save(baseline_dir / "transfer_accuracy.npy", acc_mat)
             np.save(baseline_dir / "transfer_kappa.npy", kappa_mat)
             np.save(baseline_dir / "transfer_f1_macro.npy", f1_mat)
+            labels = [f"A{s:02d}" for s in subjects]
+            pd.DataFrame(acc_mat, index=labels, columns=labels).to_csv(
+                baseline_dir / "transfer_accuracy.csv"
+            )
+            pd.DataFrame(kappa_mat, index=labels, columns=labels).to_csv(
+                baseline_dir / "transfer_kappa.csv"
+            )
+            pd.DataFrame(f1_mat, index=labels, columns=labels).to_csv(
+                baseline_dir / "transfer_f1_macro.csv"
+            )
+            loso_df = _compute_koopman_loso(
+                loader,
+                subjects,
+                pre,
+                lda_kwargs,
+                cov_eps,
+                mode=method,
+                pca_rank=koopman_pca_rank,
+                lifting=koopman_lifting,
+            )
+            loso_df.to_csv(baseline_dir / "loso.csv", index=False)
+            _save_metric_summary(loso_df, baseline_dir / "summary.json")
+            loso_rows.append(
+                _loso_summary_row(method_name, method, loso_df, koopman_pca_rank, koopman_lifting)
+            )
         else:
             acc_mat = _load_transfer_matrix(baseline_dir, "accuracy")
             kappa_mat = _load_transfer_matrix(baseline_dir, "kappa")
             f1_mat = _load_transfer_matrix(baseline_dir, "f1_macro")
+            summary = _load_metric_summary(baseline_dir / "summary.json")
+            loso_rows.append(
+                {
+                    "method": method_name,
+                    "method_key": method,
+                    "accuracy_mean": float(summary["accuracy"]["mean"]),
+                    "accuracy_std": float(summary["accuracy"]["std"]),
+                    "kappa_mean": float(summary["kappa"]["mean"]),
+                    "kappa_std": float(summary["kappa"]["std"]),
+                    "f1_macro_mean": float(summary["f1_macro"]["mean"]),
+                    "f1_macro_std": float(summary["f1_macro"]["std"]),
+                    "koopman_pca_rank": None,
+                    "lifting": None,
+                }
+            )
 
         domain_mean = None
         if method in ("ea", "ra"):
@@ -196,14 +368,16 @@ def main() -> None:
 
         for i, src in enumerate(subjects):
             X_src_train, y_src_train = loader.load_subject(src, split="train")
-            X_src_test, y_src_test = loader.load_subject(src, split="test")
+            X_src_test, _ = loader.load_subject(src, split="test")
             X_src_train = pre.fit(X_src_train, y_src_train).transform(X_src_train)
             X_src_test = pre.transform(X_src_test)
 
             if method in ("koopman-noalign", "static-koopman-aligner"):
                 cov_src_train = compute_covariances(X_src_train, eps=cov_eps)
                 cov_src_test = compute_covariances(X_src_test, eps=cov_eps)
-                projector = KoopmanFeatureProjector(pca_rank=16, lifting="quadratic").fit(cov_src_train)
+                projector = KoopmanFeatureProjector(
+                    pca_rank=koopman_pca_rank, lifting=koopman_lifting
+                ).fit(cov_src_train)
                 psi_src_train = projector.transform(cov_src_train)
                 F_src = projector.transform(cov_src_test)
                 aligner = None
@@ -279,13 +453,12 @@ def main() -> None:
         plot_scatter(
             rep_values,
             beh_values,
-            save_path=f"results/figures/rep_acc_scatter_{method}.pdf",
+            save_path=output_root / f"rep_acc_scatter_{method}.pdf",
             title=f"Representation-Behavior Inconsistency ({method_name})",
             r=float(r),
             p_value=float(p),
         )
 
-        # Inconsistent cases
         case_a = pair_df[(pair_df["cka"] > 0.7) & (pair_df["accuracy"] < 0.5)]
         case_b = pair_df[(pair_df["cka"] < 0.4) & (pair_df["accuracy"] > 0.65)]
 
@@ -310,37 +483,56 @@ def main() -> None:
             json.dumps({"r": float(r), "p_value": float(p)}, indent=2), encoding="utf-8"
         )
         rbid["pair_df"].to_csv(baseline_dir / "rbid_pairs.csv", index=False)
-
         logger.info("%s correlation: r=%.3f p=%.3g", method_name, r, p)
 
     plot_correlation_comparison(
         [name for _m, name in methods],
         correlations,
-        save_path="results/figures/correlation_comparison.pdf",
+        save_path=output_root / "correlation_comparison.pdf",
     )
 
     rbid_df = pd.DataFrame(rbid_rows).sort_values("rbid", ascending=False)
-    pd.concat(all_pair_rows, ignore_index=True).to_csv("results/figures/pairwise_scores.csv", index=False)
-    rbid_df.to_csv("results/figures/rbid_method_comparison.csv", index=False)
+    pairwise_df = pd.concat(all_pair_rows, ignore_index=True)
+    loso_summary_df = pd.DataFrame(loso_rows)
+    pairwise_df.to_csv(output_root / "pairwise_scores.csv", index=False)
+    rbid_df.to_csv(output_root / "rbid_method_comparison.csv", index=False)
     rbid_df[["method", "rbid", "rbid_pos", "rbid_neg", "tail_rbid"]].to_csv(
-        "results/figures/rbid_summary.csv", index=False
+        output_root / "rbid_summary.csv", index=False
     )
     rbid_df[["method", "rbid_pos", "rbid_neg"]].to_csv(
-        "results/figures/rbid_direction_breakdown.csv", index=False
+        output_root / "rbid_direction_breakdown.csv", index=False
     )
-
-    import matplotlib.pyplot as plt
+    loso_summary_df.to_csv(output_root / "loso_method_summary.csv", index=False)
+    (output_root / "run_metadata.json").write_text(
+        json.dumps(
+            {
+                "classical_root": str(classical_root),
+                "output_root": str(output_root),
+                "koopman_pca_rank": koopman_pca_rank,
+                "lifting": koopman_lifting,
+            },
+            indent=2,
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
 
     plt.figure(figsize=(8.0, 4.6))
     plt.scatter(rbid_df["rbid"], rbid_df["pearson_r"], s=80, alpha=0.8)
     for row in rbid_df.itertuples(index=False):
-        plt.annotate(row.method, (row.rbid, row.pearson_r), fontsize=9, xytext=(4, 2), textcoords="offset points")
+        plt.annotate(
+            row.method,
+            (row.rbid, row.pearson_r),
+            fontsize=9,
+            xytext=(4, 2),
+            textcoords="offset points",
+        )
     plt.xlabel("RBID")
     plt.ylabel("Pearson r")
     plt.title("RBID vs Pearson")
     plt.grid(alpha=0.3)
     plt.tight_layout()
-    plt.savefig("results/figures/rbid_scatter.pdf", dpi=300)
+    plt.savefig(output_root / "rbid_scatter.pdf", dpi=300)
     plt.close()
 
     plt.figure(figsize=(8.0, 4.6))
@@ -350,10 +542,10 @@ def main() -> None:
     plt.xticks(rotation=20, ha="right")
     plt.grid(alpha=0.3, axis="y")
     plt.tight_layout()
-    plt.savefig("results/figures/rbid_tail_bar.pdf", dpi=300)
+    plt.savefig(output_root / "rbid_tail_bar.pdf", dpi=300)
     plt.close()
 
-    logger.info("Done. Figures saved to results/figures/")
+    logger.info("Done. Phenomenon outputs saved to %s", output_root)
 
 
 if __name__ == "__main__":
