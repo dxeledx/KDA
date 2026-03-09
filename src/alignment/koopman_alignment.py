@@ -267,6 +267,7 @@ class KoopmanConservativeResidualAligner:
     basis_reg_lambda: float = 1.0e-4
     lambda_cls: float = 1.0
     lambda_dyn: float = 1.0
+    lambda_rank: float = 0.0
     lambda_reg: float = 1.0e-3
     ridge_alpha: float = 1.0e-3
     max_iter: int = 100
@@ -284,7 +285,9 @@ class KoopmanConservativeResidualAligner:
         target_features: np.ndarray,
         *,
         y_source: np.ndarray,
+        source_subject_ids: list[int] | tuple[int, ...] | np.ndarray | None = None,
         source_block_lengths: list[int] | tuple[int, ...] | np.ndarray | None = None,
+        behavior_prior_scores: dict[int, float] | None = None,
     ) -> "KoopmanConservativeResidualAligner":
         source = np.asarray(source_features, dtype=np.float64)
         target = np.asarray(target_features, dtype=np.float64)
@@ -298,6 +301,10 @@ class KoopmanConservativeResidualAligner:
             raise ValueError(f"y_source length mismatch: {len(source)} vs {len(y_source)}")
         if float(self.lambda_dyn) > 0.0 and source_block_lengths is None:
             raise ValueError("source_block_lengths are required when lambda_dyn > 0.")
+        if float(self.lambda_rank) > 0.0 and behavior_prior_scores is None:
+            raise ValueError("behavior_prior_scores are required when lambda_rank > 0.")
+        if float(self.lambda_rank) > 0.0 and source_subject_ids is None:
+            raise ValueError("source_subject_ids are required when lambda_rank > 0.")
 
         self.source_mean_ = source.mean(axis=0)
         self.target_mean_ = target.mean(axis=0)
@@ -328,6 +335,11 @@ class KoopmanConservativeResidualAligner:
         centered_target = target - self.target_mean_
         source_low_rank = centered_source @ self.basis_
         target_low_rank = centered_target @ self.basis_
+        source_blocks = (
+            _split_blocks(source, source_block_lengths)
+            if source_block_lengths is not None
+            else [source]
+        )
 
         from src.models.classifiers import LDA
 
@@ -339,7 +351,6 @@ class KoopmanConservativeResidualAligner:
 
         source_operator = None
         if float(self.lambda_dyn) > 0.0:
-            source_blocks = _split_blocks(source, source_block_lengths)
             source_operator = _fit_linear_state_operator_blocks(
                 source_blocks,
                 ridge_alpha=float(self.ridge_alpha),
@@ -362,6 +373,41 @@ class KoopmanConservativeResidualAligner:
             target_next_base = np.zeros((0, source.shape[1]), dtype=np.float64)
 
         kbasis = None if source_operator is None else source_operator @ self.basis_
+        rank_pairs: list[tuple[int, int]] = []
+        rank_behavior: np.ndarray | None = None
+        source_block_means = None
+        source_block_center_means = None
+        target_mean_centered = centered_target.mean(axis=0)
+        target_mean_low_rank = target_mean_centered @ self.basis_
+        target_mean_base = self.source_mean_ + target_mean_centered
+        if float(self.lambda_rank) > 0.0:
+            source_subject_ids_arr = [int(subject_id) for subject_id in source_subject_ids]
+            if len(source_subject_ids_arr) != len(source_blocks):
+                raise ValueError(
+                    "source_subject_ids length must match number of source blocks."
+                )
+            missing = [
+                int(subject_id)
+                for subject_id in source_subject_ids_arr
+                if int(subject_id) not in behavior_prior_scores
+            ]
+            if missing:
+                raise ValueError(f"behavior_prior_scores missing subjects: {missing}")
+            rank_behavior = np.asarray(
+                [float(behavior_prior_scores[int(subject_id)]) for subject_id in source_subject_ids_arr],
+                dtype=np.float64,
+            )
+            source_block_means = np.stack(
+                [np.asarray(block, dtype=np.float64).mean(axis=0) for block in source_blocks],
+                axis=0,
+            )
+            source_block_center_means = source_block_means - self.source_mean_
+            for idx in range(len(rank_behavior)):
+                for jdx in range(len(rank_behavior)):
+                    if rank_behavior[idx] > rank_behavior[jdx] and not np.isclose(
+                        rank_behavior[idx], rank_behavior[jdx]
+                    ):
+                        rank_pairs.append((idx, jdx))
 
         def _loss_and_grad(flat_s: np.ndarray) -> tuple[float, np.ndarray]:
             s_matrix = flat_s.reshape(rank, rank)
@@ -389,17 +435,59 @@ class KoopmanConservativeResidualAligner:
                 loss_dyn = 0.0
                 grad_dyn = np.zeros_like(s_matrix)
 
+            if float(self.lambda_rank) > 0.0 and source_block_means is not None and rank_behavior is not None and rank_pairs:
+                sim_scores = []
+                sim_grads = []
+                target_mean = target_mean_base + target_mean_low_rank @ s_matrix @ self.basis_.T
+                target_norm = float(np.linalg.norm(target_mean) + 1.0e-8)
+                target_low_rank_term = target_mean_low_rank
+                for mean_source, centered_mean_source in zip(source_block_means, source_block_center_means):
+                    source_low_rank_mean = centered_mean_source @ self.basis_
+                    aligned_source_mean = mean_source + source_low_rank_mean @ s_matrix @ self.basis_.T
+                    source_norm = float(np.linalg.norm(aligned_source_mean) + 1.0e-8)
+                    cosine = float(aligned_source_mean @ target_mean) / (source_norm * target_norm)
+                    grad_source = (
+                        target_mean / (source_norm * target_norm)
+                        - cosine * aligned_source_mean / (source_norm**2)
+                    )
+                    grad_target = (
+                        aligned_source_mean / (source_norm * target_norm)
+                        - cosine * target_mean / (target_norm**2)
+                    )
+                    grad_s = (
+                        np.outer(source_low_rank_mean, grad_source @ self.basis_)
+                        + np.outer(target_low_rank_term, grad_target @ self.basis_)
+                    )
+                    sim_scores.append(cosine)
+                    sim_grads.append(grad_s)
+
+                sim_scores_arr = np.asarray(sim_scores, dtype=np.float64)
+                loss_rank = 0.0
+                grad_rank = np.zeros_like(s_matrix)
+                for idx, jdx in rank_pairs:
+                    delta = float(sim_scores_arr[idx] - sim_scores_arr[jdx])
+                    loss_rank += float(np.logaddexp(0.0, -delta))
+                    coeff = -1.0 / (1.0 + float(np.exp(delta)))
+                    grad_rank += coeff * (sim_grads[idx] - sim_grads[jdx])
+                loss_rank /= float(len(rank_pairs))
+                grad_rank /= float(len(rank_pairs))
+            else:
+                loss_rank = 0.0
+                grad_rank = np.zeros_like(s_matrix)
+
             loss_reg = float(np.sum(s_matrix * s_matrix))
             grad_reg = 2.0 * s_matrix
 
             total_loss = (
                 float(self.lambda_cls) * loss_cls
                 + float(self.lambda_dyn) * loss_dyn
+                + float(self.lambda_rank) * loss_rank
                 + float(self.lambda_reg) * loss_reg
             )
             total_grad = (
                 float(self.lambda_cls) * grad_cls
                 + float(self.lambda_dyn) * grad_dyn
+                + float(self.lambda_rank) * grad_rank
                 + float(self.lambda_reg) * grad_reg
             )
             return total_loss, total_grad.reshape(-1)
@@ -428,6 +516,25 @@ class KoopmanConservativeResidualAligner:
             "message": str(result.message),
         }
         return self
+
+    def compute_rank_loss(self, behavior_scores: np.ndarray, similarity_scores: np.ndarray) -> float:
+        behavior_scores = np.asarray(behavior_scores, dtype=np.float64)
+        similarity_scores = np.asarray(similarity_scores, dtype=np.float64)
+        if behavior_scores.shape != similarity_scores.shape:
+            raise ValueError(
+                f"Shape mismatch: {behavior_scores.shape} vs {similarity_scores.shape}"
+            )
+        losses = []
+        for idx in range(len(behavior_scores)):
+            for jdx in range(len(behavior_scores)):
+                if behavior_scores[idx] > behavior_scores[jdx] and not np.isclose(
+                    behavior_scores[idx], behavior_scores[jdx]
+                ):
+                    delta = float(similarity_scores[idx] - similarity_scores[jdx])
+                    losses.append(float(np.logaddexp(0.0, -delta)))
+        if not losses:
+            return 0.0
+        return float(np.mean(losses))
 
     def transform_source(self, features: np.ndarray) -> np.ndarray:
         if self.source_mean_ is None or self.basis_ is None or self.residual_matrix_ is None:

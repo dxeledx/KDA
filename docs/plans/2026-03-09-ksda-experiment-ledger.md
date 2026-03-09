@@ -11,7 +11,7 @@
 |---|---|---|---|---|---|---|---|---|
 | E0 | done | phenomenon | 统一报告下 baselines 的 mismatch 到底多大？ | 全量刷新 baseline + phenomenon + 双 rank Koopman 汇总 | 现有文档结论 | acc / kappa / RBID / Tail-RBID | `results/e0/2026-03-09-e0-r1` | `E1` control 固定为 `Static Koopman aligner-r48` |
 | E1 | done | method | 保守 Koopman aligner 本身是否更稳？ | 低秩残差保守对齐 + `L_cls + L_dyn + L_reg` | `Static Koopman aligner-r48` | acc / kappa / RBID / Tail-RBID | `results/e1/2026-03-09-e1-r1` | Gate 通过，可进入 `E2` |
-| E2 | planned | method | 加入 RBID surrogate 后是否进一步降低 mismatch？ | 在 E1 上加 ranking surrogate | E1 | acc / kappa / RBID / Tail-RBID | TBD | TBD |
+| E2 | done | method | 加入 RBID surrogate 后是否进一步降低 mismatch？ | 在 E1 上加 `RBID surrogate` ranking loss | E1 | acc / kappa / RBID / Tail-RBID | `results/e2/2026-03-09-e2-r1` | 相对 E1 未通过 gate，需要诊断 surrogate 设计 |
 | E3 | backlog | extension | 窗口级保守更新是否还有增益？ | 静态 → 窗口级 | E2 | acc / RBID / Tail-RBID / stability | TBD | TBD |
 | E4 | backlog | extension | 线性性能修正算子是否值得作为第二贡献？ | 算子修正 | E2 | acc / RBID / operator stats | TBD | TBD |
 
@@ -98,6 +98,12 @@
   - `rbid: 0.3056 vs 0.3135`
   - `tail_rbid: 0.5503 vs 0.6357`
 - `E1` 两个 gate 都通过，因此下一步主线可进入 `E2`。
+- 完成 `E2`：`results/e2/2026-03-09-e2-r1`。
+- `RBID-aware Conservative Koopman aligner-r48` 相对 `E1`：
+  - `accuracy_mean: 0.4232 vs 0.4248`
+  - `rbid: 0.3095 vs 0.3056`
+  - `tail_rbid: 0.6234 vs 0.5503`
+- `E2` 相对 `E1` 三个 gate 都失败；当前不能进入 `E3 / E4`，需要先诊断 surrogate 与 similarity proxy。
 
 ---
 
@@ -243,6 +249,83 @@
 #### I. 下一步动作
 
 - 在 `E1` 的保守残差对齐器上加入 `RBID surrogate`，并保持其它设置不变，做 `E2` 的唯一主因素改动。
+
+---
+
+### [E2 - 2026-03-09-e2-r1]
+
+**Date**: 2026-03-09  
+**Owner**: Jason + Codex  
+**Status**: done
+
+#### A. 这轮要回答什么问题
+
+- 在 `E1` 的同一保守对齐器上，只加入 `RBID surrogate` 后，是否能进一步降低 mismatch 并至少不伤 accuracy？
+
+#### B. 核心假设
+
+- 若把“表征排序逼近行为排序”写进训练目标，`RBID / Tail-RBID` 应该比 `E1` 更低，并且 accuracy 至少不退化。
+
+#### C. 相比上一轮唯一主改动
+
+- 在 `E1` 的 `L_cls + L_dyn + L_reg` 基础上加入 `L_rank`
+- 行为先验固定为 `E0/RA pairwise transfer accuracy`
+- 相似度代理固定为 `aligned source-block mean` 与 `aligned target-train mean` 的 cosine
+
+#### D. 固定不变的控制项
+
+- Dataset: `BNCI2014001`
+- Protocol: `LOSO` + pairwise transfer mismatch
+- Representation: `pca_rank=48`, `quadratic`
+- Base aligner: `Conservative Koopman aligner-r48`
+- Static control: `Static Koopman aligner-r48`
+
+#### E. 运行配置
+
+- Config: 当前仓库默认 `configs/*.yaml`
+- Seed(s): 单次 deterministic run
+- Run dir: `results/e2/2026-03-09-e2-r1`
+
+#### F. 主结果
+
+| Metric | Value | vs E1 |
+|---|---:|---:|
+| Accuracy | `0.4232` | `-0.0015` |
+| Kappa | `0.2310` | `-0.0021` |
+| RBID | `0.3095` | `+0.0040` |
+| Tail-RBID | `0.6234` | `+0.0731` |
+
+#### G. 诊断结果
+
+- 相对 static control：
+  - accuracy 仍高 `+0.0397`
+  - RBID 略低 `-0.0040`
+  - Tail-RBID 略低 `-0.0123`
+- 相对 E1：
+  - `accuracy_pass = false`
+  - `rbid_pass = false`
+  - `tail_rbid_pass = false`
+  - `ready_for_e3_like_extensions = false`
+- `pairwise_scores.csv` 行数 = `432`
+- `rbid_method_comparison.csv` 已包含 `RBID-aware Conservative Koopman aligner-r48`
+
+#### H. 结论
+
+- 这轮支持什么：
+  - ranking supervision 没有把方法彻底带坏；相对 static control 仍维持正收益
+  - 当前 surrogate 至少在实现上闭环可跑、指标可比
+- 这轮不支持什么：
+  - 当前 `RBID surrogate` 设计没有优于 `E1`
+  - 当前 `behavior prior + similarity proxy` 组合不能作为最终 paper-facing 主结果
+- 是否进入下一轮：
+  - 不进入 `E3 / E4`
+  - 先回到 `E2` 内部做 surrogate 诊断与重设计
+
+#### I. 下一步动作
+
+- 优先诊断两件事：
+  1. `E0/RA` 作为行为先验是否过强或错配；
+  2. `aligned mean cosine` 是否过弱，无法真正承载 RBID 排序目标。
 
 ---
 

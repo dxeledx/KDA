@@ -51,3 +51,22 @@
   - 光靠“保守残差对齐 + source 判别保持 + 动力学一致性”，不加 `RBID surrogate`，已经能让当前 Koopman 线明显更稳
   - 当前主 idea 的顺序站住了：先做保守对齐，再把 mismatch-aware supervision 加进去
 - 因此 `E2` 的唯一主改动应当是：**在 E1 相同参数化上加入 `RBID surrogate`**，其余保持不变。
+
+## E2 结果（2026-03-09）
+- 运行目录：`results/e2/2026-03-09-e2-r1`
+- 方法：`RBID-aware Conservative Koopman aligner-r48`
+- 设计：
+  - 行为先验：`E0/RA pairwise transfer accuracy`
+  - 相似度代理：`aligned source-block mean` vs `aligned target-train mean` cosine
+  - 唯一新项：`L_rank`
+- 相对 `E1`：
+  - `accuracy_mean`: `0.4232 vs 0.4248`，下降 `-0.0015`
+  - `rbid`: `0.3095 vs 0.3056`，变差 `+0.0040`
+  - `tail_rbid`: `0.6234 vs 0.5503`，明显变差 `+0.0731`
+- 这说明：
+  - 当前 `RBID surrogate` 第一版**没有站住**
+  - 问题不在“加 ranking supervision 这件事本身一定错”，而更可能在：
+    - 行为先验选取不合适；
+    - 相似度代理太弱；
+    - surrogate 把优化推向了对 RBID 指标并不真实有利的方向
+- 因此下一步不应直接进入 `E3 / E4`，而应先在 `E2` 内部做 surrogate 诊断与重设计。

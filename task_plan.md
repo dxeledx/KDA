@@ -24,4 +24,4 @@
 - `results/ksda/exp_d1p5/2026-03-09-ksda-d1p5-r48-r3/summary.json` 与若干 CSV 为空；当前以 `docs/KSDA/21-exp-d1t-r48-d1p5-results-memo.md` 的人工结论为准，后续若重跑需补齐机器可读摘要。
 
 ## Status
-**Currently in Phase 5** - 已完成 `E1`，并且 gate 通过；下一步进入 `E2`：在相同对齐器上加入 RBID surrogate。
+**Currently in Phase 5** - 已完成 `E2`，但相对 `E1` gate 未通过；下一步应诊断 surrogate 设计，而不是直接进入更后面的阶段。
