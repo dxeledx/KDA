@@ -1,0 +1,4 @@
+method,method_key,pearson_r,rbid,rbid_pos,rbid_neg,tail_rbid,pairwise_accuracy_mean
+Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh,0.3579490873639866,0.2936507936507936,0.14682539682539683,0.14682539682539683,0.6190476190476191,0.32084297839506176
+Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise,0.2505552458334039,0.3055555555555556,0.1527777777777778,0.1527777777777778,0.5502645502645502,0.32754629629629634
+RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48,0.3696467160602598,0.3095238095238095,0.1547619047619047,0.1547619047619047,0.6233766233766234,0.31486304012345673

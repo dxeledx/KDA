@@ -24,4 +24,4 @@
 - `results/ksda/exp_d1p5/2026-03-09-ksda-d1p5-r48-r3/summary.json` 与若干 CSV 为空；当前以 `docs/KSDA/21-exp-d1t-r48-d1p5-results-memo.md` 的人工结论为准，后续若重跑需补齐机器可读摘要。
 
 ## Status
-**Currently in Phase 5** - 已完成 `E2`，但相对 `E1` gate 未通过；下一步应诊断 surrogate 设计，而不是直接进入更后面的阶段。
+**Currently in Phase 5** - 已完成 `E2-ProxyDiag`，确认当前 `aligned mean cosine` 是首要瓶颈：它对真实 behavior 为负相关，明显弱于 `proxy_test_mean_neg_l2` 和 `proxy_test_cka`；下一步应做 `proxy replacement only`，而不是进入 `E3 / E4`。

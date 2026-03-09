@@ -26,10 +26,26 @@ data/processed/
 
 # Results
 results/*
+!results/e0/
+!results/e0/**
+!results/e1/
+!results/e1/**
+!results/e2/
+!results/e2/**
+!results/e2_diag/
+!results/e2_diag/**
+!results/e2_proxy_diag/
+!results/e2_proxy_diag/**
+!results/figures/
+!results/figures/**
 !results/ksda/
 !results/ksda/**
 *.pdf
 *.png
+!results/**/*.pdf
+!results/**/*.png
+!results/figures/**/*.pdf
+!results/figures/**/*.png
 !results/ksda/**/*.pdf
 !results/ksda/**/*.png
 

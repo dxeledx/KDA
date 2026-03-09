@@ -1,0 +1,42 @@
+{
+  "run_dir": "results/e1/2026-03-09-e1-r1",
+  "representation": {
+    "pca_rank": 48,
+    "lifting": "quadratic"
+  },
+  "control": {
+    "method": "Static Koopman aligner-r48",
+    "accuracy_mean": 0.3834876543209876,
+    "accuracy_std": 0.1367578604895993,
+    "kappa_mean": 0.1779835390946502,
+    "kappa_std": 0.1823438139861325,
+    "rbid": 0.3134920634920635,
+    "rbid_pos": 0.1567460317460317,
+    "rbid_neg": 0.1567460317460317,
+    "tail_rbid": 0.6357142857142856,
+    "pearson_r": 0.4840564679661936
+  },
+  "conservative": {
+    "method": "Conservative Koopman aligner-r48",
+    "accuracy_mean": 0.42476851851851855,
+    "accuracy_std": 0.13713079992685903,
+    "kappa_mean": 0.2330246913580247,
+    "kappa_std": 0.1828410665691454,
+    "rbid": 0.3055555555555556,
+    "rbid_pos": 0.1527777777777778,
+    "rbid_neg": 0.1527777777777778,
+    "tail_rbid": 0.5502645502645502,
+    "pearson_r": 0.2505552458334039
+  },
+  "delta_vs_control": {
+    "accuracy_mean": 0.041280864197530964,
+    "rbid": -0.007936507936507908,
+    "tail_rbid": -0.08544973544973533
+  },
+  "gate": {
+    "accuracy_pass": true,
+    "rbid_pass": true,
+    "ready_for_e2": true
+  },
+  "elapsed_sec": 30.1082371250086
+}

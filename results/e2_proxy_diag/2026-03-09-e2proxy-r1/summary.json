@@ -1,0 +1,51 @@
+{
+  "run_dir": "results/e2_proxy_diag/2026-03-09-e2proxy-r1",
+  "current_training_proxy": {
+    "proxy": "proxy_train_mean_cosine",
+    "rbid_vs_behavior": 0.42857142857142855,
+    "tail_rbid_vs_behavior": 0.8174603174603174,
+    "pearson_vs_behavior": -0.15842424541652508,
+    "spearman_vs_behavior": -0.1817626445743495,
+    "mean_target_corr_behavior_spearman": -0.2435769119578986,
+    "mean_target_corr_behavior_pearson": -0.1927528952975387,
+    "rbid_vs_ra": 0.39285714285714285,
+    "tail_rbid_vs_ra": 0.6742857142857143,
+    "pearson_vs_ra": -0.07364136736721455,
+    "spearman_vs_ra": -0.10647623880742361,
+    "mean_target_corr_ra_spearman": 0.006303348001624164
+  },
+  "best_proxy_by_behavior": {
+    "proxy": "proxy_test_mean_neg_l2",
+    "rbid_vs_behavior": 0.27380952380952384,
+    "tail_rbid_vs_behavior": 0.6015037593984962,
+    "pearson_vs_behavior": 0.47376807251105413,
+    "spearman_vs_behavior": 0.5264954428969141,
+    "mean_target_corr_behavior_spearman": 0.3973974025403623,
+    "mean_target_corr_behavior_pearson": 0.38845185507637675,
+    "rbid_vs_ra": 0.3134920634920635,
+    "tail_rbid_vs_ra": 0.6616541353383458,
+    "pearson_vs_ra": 0.5166873428472328,
+    "spearman_vs_ra": 0.4663884436101,
+    "mean_target_corr_ra_spearman": 0.2623626793963809
+  },
+  "best_proxy_by_ra": {
+    "proxy": "proxy_test_cka",
+    "rbid_vs_behavior": 0.2936507936507936,
+    "tail_rbid_vs_behavior": 0.6190476190476191,
+    "pearson_vs_behavior": 0.3579490873639866,
+    "spearman_vs_behavior": 0.3100921880925412,
+    "mean_target_corr_behavior_spearman": 0.3044234728044594,
+    "mean_target_corr_behavior_pearson": 0.24658847333541414,
+    "rbid_vs_ra": 0.2738095238095238,
+    "tail_rbid_vs_ra": 0.5279503105590063,
+    "pearson_vs_ra": 0.3556925314309045,
+    "spearman_vs_ra": 0.33430643861212983,
+    "mean_target_corr_ra_spearman": 0.4019768668359023
+  },
+  "refresh_consistency": {
+    "n_pairs": 72,
+    "max_abs_accuracy_delta": 5.551115123125783e-17,
+    "max_abs_cka_delta": 9.71445146547012e-17
+  },
+  "elapsed_sec": 18.22378983400995
+}

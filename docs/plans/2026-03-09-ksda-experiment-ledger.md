@@ -12,6 +12,8 @@
 | E0 | done | phenomenon | 统一报告下 baselines 的 mismatch 到底多大？ | 全量刷新 baseline + phenomenon + 双 rank Koopman 汇总 | 现有文档结论 | acc / kappa / RBID / Tail-RBID | `results/e0/2026-03-09-e0-r1` | `E1` control 固定为 `Static Koopman aligner-r48` |
 | E1 | done | method | 保守 Koopman aligner 本身是否更稳？ | 低秩残差保守对齐 + `L_cls + L_dyn + L_reg` | `Static Koopman aligner-r48` | acc / kappa / RBID / Tail-RBID | `results/e1/2026-03-09-e1-r1` | Gate 通过，可进入 `E2` |
 | E2 | done | method | 加入 RBID surrogate 后是否进一步降低 mismatch？ | 在 E1 上加 `RBID surrogate` ranking loss | E1 | acc / kappa / RBID / Tail-RBID | `results/e2/2026-03-09-e2-r1` | 相对 E1 未通过 gate，需要诊断 surrogate 设计 |
+| E2-Diag | done | diagnosis | E2 的失败有多少来自 pairwise 协议混杂？ | 用 E2 的 target-global pairwise 协议重算 `lambda_rank=0` conservative baseline | 原始 E1 pairwise + E2 | pairwise acc / RBID / Tail-RBID / Pearson-r | `results/e2_diag/2026-03-09-e2diag-r1` | 协议混杂存在，但 E2 在同口径下仍未优于 refreshed baseline |
+| E2-ProxyDiag | done | diagnosis | 当前 surrogate 真正坏在 prior 还是 proxy？ | 固定 `RA prior` 与 target-global 协议，只更换 similarity proxy 做离线诊断 | E2-Diag refreshed baseline | proxy-vs-behavior RBID / Spearman / Pearson | `results/e2_proxy_diag/2026-03-09-e2proxy-r1` | 当前 `aligned mean cosine` 明显失效，下一步应优先替换 proxy |
 | E3 | backlog | extension | 窗口级保守更新是否还有增益？ | 静态 → 窗口级 | E2 | acc / RBID / Tail-RBID / stability | TBD | TBD |
 | E4 | backlog | extension | 线性性能修正算子是否值得作为第二贡献？ | 算子修正 | E2 | acc / RBID / operator stats | TBD | TBD |
 
@@ -104,6 +106,23 @@
   - `rbid: 0.3095 vs 0.3056`
   - `tail_rbid: 0.6234 vs 0.5503`
 - `E2` 相对 `E1` 三个 gate 都失败；当前不能进入 `E3 / E4`，需要先诊断 surrogate 与 similarity proxy。
+- 完成 `E2-Diag`：`results/e2_diag/2026-03-09-e2diag-r1`。
+- 统一 pairwise 协议到 `target-global pooled-source per target` 后：
+  - refreshed conservative baseline: `RBID = 0.2937`, `Tail-RBID = 0.6190`, `pairwise accuracy mean = 0.3208`
+  - E2: `RBID = 0.3095`, `Tail-RBID = 0.6234`, `pairwise accuracy mean = 0.3149`
+- 因此协议混杂确实存在，但 E2 在同口径下仍未优于 refreshed baseline；问题不只在评估口径，还在当前 surrogate / similarity proxy。
+- 完成 `E2-ProxyDiag`：`results/e2_proxy_diag/2026-03-09-e2proxy-r1`。
+- 固定 `RA prior` 与 target-global 协议后，proxy-only 诊断显示：
+  - 当前训练 proxy `proxy_train_mean_cosine` 对真实 behavior 是负相关：
+    - `RBID_vs_behavior = 0.4286`
+    - `mean_target_corr_behavior_spearman = -0.2436`
+  - 最优 behavior proxy 是 `proxy_test_mean_neg_l2`：
+    - `RBID_vs_behavior = 0.2738`
+    - `mean_target_corr_behavior_spearman = 0.3974`
+  - 最优 RA-facing proxy 是 `proxy_test_cka`：
+    - `RBID_vs_ra = 0.2738`
+    - `mean_target_corr_ra_spearman = 0.4020`
+- 因此当前主问题优先级已明确：先换 proxy，再决定是否保留 `RA prior`。
 
 ---
 
@@ -326,6 +345,136 @@
 - 优先诊断两件事：
   1. `E0/RA` 作为行为先验是否过强或错配；
   2. `aligned mean cosine` 是否过弱，无法真正承载 RBID 排序目标。
+
+---
+
+### [E2-Diag - 2026-03-09-e2diag-r1]
+
+**Date**: 2026-03-09  
+**Owner**: Jason + Codex  
+**Status**: done
+
+#### A. 这轮要回答什么问题
+
+- E2 相对 E1 的变差，有多少只是来自 pairwise 评估协议不一致？
+
+#### B. 核心假设
+
+- 如果把 `lambda_rank=0` 的 conservative baseline 放到与 E2 相同的 pairwise 协议下，原始 E1/E2 的 mismatch 比较会发生可见变化。
+
+#### C. 相比上一轮唯一主改动
+
+- 不改参数化、不改 representation、不改 classifier，只把保守 aligner 的 pairwise 评估协议改成与 E2 相同的 `target-global pooled-source per target`。
+
+#### D. 固定不变的控制项
+
+- Dataset: `BNCI2014001`
+- Representation: `pca_rank=48`, `quadratic`
+- Base aligner: `Conservative Koopman aligner-r48`
+- Classifier: `LDA`
+- Pairwise protocol for refreshed baseline: 与 E2 完全一致
+
+#### E. 运行配置
+
+- Run dir: `results/e2_diag/2026-03-09-e2diag-r1`
+
+#### F. 主结果
+
+| Metric | Value | vs E2 |
+|---|---:|---:|
+| Refreshed pairwise accuracy mean | `0.3208` | `+0.0060` |
+| Refreshed RBID | `0.2937` | `-0.0159` |
+| Refreshed Tail-RBID | `0.6190` | `-0.0043` |
+| Refreshed Pearson-r | `0.3579` | `-0.0117` |
+
+#### G. 诊断结果
+
+- 原始 E1 pairwise 协议确实与 E2 不同，原比较存在混杂。
+- 但在统一协议后，refreshed conservative baseline 仍优于 E2：
+  - `RBID: 0.2937 < 0.3095`
+  - `Tail-RBID: 0.6190 < 0.6234`
+  - `pairwise accuracy mean: 0.3208 > 0.3149`
+- target-wise 平均相关：
+  - `corr_ra_vs_accuracy_spearman`: refreshed `0.5377` vs E2 `0.5012`
+  - `corr_accuracy_vs_cka_spearman`: refreshed `0.3044` vs E2 `0.2567`
+
+#### H. 结论
+
+- 这轮支持什么：
+  - 之后所有 surrogate 诊断都必须统一到同一 pairwise 协议
+  - 当前 E2 的问题不只是评估口径，surrogate / proxy 本身也在拉偏
+- 这轮不支持什么：
+  - 不能把 E2 的失败完全归因于 protocol mismatch
+- 是否进入下一轮：
+  - 仍不进入 `E3 / E4`
+
+#### I. 下一步动作
+
+- 在统一 pairwise 协议下，优先替换 similarity proxy；`RA prior` 先保留不动。
+
+---
+
+### [E2-ProxyDiag - 2026-03-09-e2proxy-r1]
+
+**Date**: 2026-03-09  
+**Owner**: Jason + Codex  
+**Status**: done
+
+#### A. 这轮要回答什么问题
+
+- 在固定 `RA prior` 和统一 pairwise 协议后，当前 E2 失败到底更像是 prior 问题，还是 proxy 问题？
+
+#### B. 核心假设
+
+- 如果只替换 similarity proxy 做离线诊断，当前训练 proxy 与真实 behavior 的排序一致性会显著差于更合理的候选 proxy。
+
+#### C. 相比上一轮唯一主改动
+
+- 不改 aligner、不改 prior、不改 protocol，只对多种 candidate proxy 做离线 ranking 诊断。
+
+#### D. 固定不变的控制项
+
+- Dataset: `BNCI2014001`
+- Representation: `pca_rank=48`, `quadratic`
+- Base aligner: `Conservative Koopman aligner-r48`
+- Pairwise protocol: `target-global pooled-source per target`
+- Behavior prior: `E0/RA pairwise transfer accuracy`
+
+#### E. 运行配置
+
+- Run dir: `results/e2_proxy_diag/2026-03-09-e2proxy-r1`
+
+#### F. 主结果
+
+| Metric | Value | vs Current Training Proxy |
+|---|---:|---:|
+| Current proxy (`proxy_train_mean_cosine`) RBID vs behavior | `0.4286` | baseline |
+| Best behavior proxy (`proxy_test_mean_neg_l2`) RBID vs behavior | `0.2738` | `-0.1548` |
+| Current proxy mean target Spearman vs behavior | `-0.2436` | baseline |
+| Best behavior proxy mean target Spearman vs behavior | `0.3974` | `+0.6410` |
+
+#### G. 诊断结果
+
+- 当前训练 proxy `proxy_train_mean_cosine`：
+  - 对 behavior 是负相关；
+  - 对 RA prior 也几乎没有稳定正相关。
+- `proxy_test_mean_neg_l2` 是最好的 behavior-facing proxy。
+- `proxy_test_cka` 是最好的 RA-facing proxy。
+- train-mean family 整体都弱，test-side distribution-sensitive proxy 明显更可信。
+
+#### H. 结论
+
+- 这轮支持什么：
+  - 当前 `aligned mean cosine` 是第一优先级问题
+  - proxy 的问题已经足够强，不需要先去动 `RA prior`
+- 这轮不支持什么：
+  - 不能说明 `RA prior` 已经完全没问题，只能说明它不是当前首要瓶颈
+- 是否进入下一轮：
+  - 继续在 `E2` 内部做 proxy 替换，不进入 `E3 / E4`
+
+#### I. 下一步动作
+
+- 先做一个 `proxy replacement only` 版本：保持 `RA prior` 不变，把 `aligned mean cosine` 换成更强的 proxy。
 
 ---
 

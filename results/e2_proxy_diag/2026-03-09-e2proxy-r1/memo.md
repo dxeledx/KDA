@@ -1,0 +1,16 @@
+# E2 Proxy-only Diagnostic Memo
+
+**Run dir**: `results/e2_proxy_diag/2026-03-09-e2proxy-r1`
+
+**Current training proxy**: `proxy_train_mean_cosine`
+**Best proxy by behavior**: `proxy_test_mean_neg_l2`
+**Best proxy by RA prior**: `proxy_test_cka`
+
+## Proxy summary
+
+proxy,rbid_vs_behavior,tail_rbid_vs_behavior,mean_target_corr_behavior_spearman,rbid_vs_ra,mean_target_corr_ra_spearman
+proxy_test_mean_neg_l2,0.27380952380952384,0.6015037593984962,0.3973974025403623,0.3134920634920635,0.2623626793963809
+proxy_test_cka,0.2936507936507936,0.6190476190476191,0.3044234728044594,0.2738095238095238,0.4019768668359023
+proxy_train_mean_neg_l2,0.36507936507936506,0.6770186335403726,0.06628056756630753,0.4365079365079365,-0.2420519981398456
+proxy_train_mean_cosine,0.42857142857142855,0.8174603174603174,-0.2435769119578986,0.39285714285714285,0.006303348001624164
+proxy_test_mean_cosine,0.43650793650793646,0.7959183673469387,-0.2636009058470046,0.39285714285714274,0.021473613127157436

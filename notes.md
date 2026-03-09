@@ -70,3 +70,45 @@
     - 相似度代理太弱；
     - surrogate 把优化推向了对 RBID 指标并不真实有利的方向
 - 因此下一步不应直接进入 `E3 / E4`，而应先在 `E2` 内部做 surrogate 诊断与重设计。
+
+## E2-Diag 结果（2026-03-09）
+- 运行目录：`results/e2_diag/2026-03-09-e2diag-r1`
+- 目的：
+  - 排除一个关键混杂：`E1` 与 `E2` 的 pairwise mismatch 评估协议并不一致。
+  - 用与 `E2` 完全相同的 `target-global pooled-source per target` 协议，重算一次 `lambda_rank=0` 的 conservative baseline。
+- refreshed conservative baseline（同 E2 协议）：
+  - `pairwise_accuracy_mean = 0.3208`
+  - `RBID = 0.2937`
+  - `Tail-RBID = 0.6190`
+  - `Pearson-r = 0.3579`
+- 相对 `E2`：
+  - `pairwise_accuracy_mean`: `0.3208 vs 0.3149`
+  - `RBID`: `0.2937 vs 0.3095`
+  - `Tail-RBID`: `0.6190 vs 0.6234`
+- 这说明：
+  - 之前的 `E1/E2` 比较确实有 protocol mismatch，后续不能再直接引用原始 pairwise 对比。
+  - 但即便去掉这个混杂，当前 `RBID surrogate` 版本仍然没有优于 refreshed conservative baseline。
+  - 因此主问题不只在评估口径，更在当前 surrogate / similarity proxy 的设计。
+- 当前更可信的下一步是：
+  - 先固定 pairwise 协议；
+  - 保持 `RA prior` 不动；
+  - 优先替换当前 `aligned mean cosine` similarity proxy。
+
+## E2-ProxyDiag 结果（2026-03-09）
+- 运行目录：`results/e2_proxy_diag/2026-03-09-e2proxy-r1`
+- 目的：
+  - 在固定 `RA prior` 与 `target-global pooled-source per target` 协议下，只诊断 proxy 本身。
+- 当前训练 proxy：`proxy_train_mean_cosine`
+  - `RBID_vs_behavior = 0.4286`
+  - `mean_target_corr_behavior_spearman = -0.2436`
+  - 对真实 behavior 呈明显负相关，说明它本身就在把排序往错误方向推。
+- 最优 behavior-facing proxy：`proxy_test_mean_neg_l2`
+  - `RBID_vs_behavior = 0.2738`
+  - `mean_target_corr_behavior_spearman = 0.3974`
+- 最优 RA-facing proxy：`proxy_test_cka`
+  - `RBID_vs_ra = 0.2738`
+  - `mean_target_corr_ra_spearman = 0.4020`
+- 这说明：
+  - 当前主瓶颈已经基本锁定在 **similarity proxy**，而不是 `RA prior`。
+  - train-mean cosine 这条线应当停止继续投入。
+  - 下一步最合理的是做一个 **proxy replacement only** 版本，先保持 `RA prior` 不变。

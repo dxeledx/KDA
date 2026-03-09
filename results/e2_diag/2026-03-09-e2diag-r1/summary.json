@@ -1,0 +1,55 @@
+{
+  "run_dir": "results/e2_diag/2026-03-09-e2diag-r1",
+  "protocol_match": {
+    "pairwise_protocol": "target-global pooled-source per target",
+    "original_e1_pairwise_protocol": "per-source per-target refit"
+  },
+  "e1_original_pairwise": {
+    "method": "Conservative Koopman aligner-r48 (original pairwise)",
+    "method_key": "conservative-koopman-aligner-r48-original-pairwise",
+    "pearson_r": 0.2505552458334039,
+    "rbid": 0.3055555555555556,
+    "rbid_pos": 0.1527777777777778,
+    "rbid_neg": 0.1527777777777778,
+    "tail_rbid": 0.5502645502645502,
+    "pairwise_accuracy_mean": 0.32754629629629634
+  },
+  "e1_refreshed_pairwise": {
+    "method": "Conservative Koopman aligner-r48 (target-global refresh)",
+    "method_key": "conservative-koopman-aligner-r48-target-global-refresh",
+    "rbid": 0.2936507936507936,
+    "rbid_pos": 0.14682539682539683,
+    "rbid_neg": 0.14682539682539683,
+    "tail_rbid": 0.6190476190476191,
+    "pearson_r": 0.3579490873639866,
+    "pairwise_accuracy_mean": 0.32084297839506176
+  },
+  "e2_pairwise": {
+    "method": "RBID-aware Conservative Koopman aligner-r48",
+    "method_key": "rbid-aware-conservative-koopman-aligner-r48",
+    "pearson_r": 0.3696467160602598,
+    "rbid": 0.3095238095238095,
+    "rbid_pos": 0.1547619047619047,
+    "rbid_neg": 0.1547619047619047,
+    "tail_rbid": 0.6233766233766234,
+    "pairwise_accuracy_mean": 0.31486304012345673
+  },
+  "delta_refresh_vs_original": {
+    "pairwise_accuracy_mean": -0.006703317901234573,
+    "rbid": -0.011904761904761973,
+    "tail_rbid": 0.06878306878306883,
+    "pearson_r": 0.10739384153058273
+  },
+  "delta_e2_vs_refresh": {
+    "pairwise_accuracy_mean": -0.005979938271605034,
+    "rbid": 0.015873015873015872,
+    "tail_rbid": 0.0043290043290042934,
+    "pearson_r": 0.011697628696273166
+  },
+  "diagnosis": {
+    "e2_beats_refresh_on_rbid": false,
+    "e2_beats_refresh_on_tail_rbid": false,
+    "e2_beats_refresh_on_pairwise_accuracy": false
+  },
+  "elapsed_sec": 19.986050375009654
+}

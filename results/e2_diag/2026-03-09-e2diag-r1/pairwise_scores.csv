@@ -1,0 +1,217 @@
+source,target,accuracy,kappa,f1_macro,cka,method,method_key
+1,2,0.2256944444444444,-0.0324074074074074,0.1562721764784978,0.013549971298807,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,3,0.5729166666666666,0.4305555555555556,0.5319900932400933,0.0510230760162229,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,4,0.3472222222222222,0.1296296296296296,0.3125086939751132,0.0124919612624221,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,5,0.3402777777777778,0.1203703703703703,0.2718330575473432,0.0341314422628389,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,6,0.34375,0.125,0.3261732346002009,0.0592375591346319,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,7,0.4861111111111111,0.3148148148148147,0.4567853296900279,0.0978193700851665,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,8,0.4861111111111111,0.3148148148148147,0.4643890055568518,0.0343699858241028,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,9,0.5104166666666666,0.3472222222222222,0.492244108096133,0.1302410691163398,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,1,0.1805555555555555,-0.0925925925925925,0.1416578371655878,0.0126384969843995,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,3,0.1076388888888889,-0.1898148148148148,0.0959323607733894,0.034517426603205,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,4,0.3090277777777778,0.0787037037037037,0.2658216084315456,0.0438320149043512,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,5,0.2569444444444444,0.0092592592592593,0.2257692761605035,0.2832822976845484,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,6,0.2013888888888889,-0.0648148148148148,0.1998512304863457,0.0421604966354433,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,7,0.1319444444444444,-0.1574074074074074,0.1325568036065395,0.0060877574212639,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,8,0.3333333333333333,0.1111111111111111,0.272705568819055,0.0110452238840665,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+2,9,0.15625,-0.125,0.1761999539806719,0.0498214942368635,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,1,0.5,0.3333333333333333,0.4778163526238672,0.0593990125911675,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,2,0.2777777777777778,0.037037037037037,0.2265911173813113,0.0775432494138567,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,4,0.2916666666666667,0.0555555555555555,0.2701085796457553,0.0096773570385801,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,5,0.2951388888888889,0.0601851851851852,0.265766108485681,0.0286197774281773,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,6,0.2847222222222222,0.0462962962962962,0.2595647355687152,0.0212276730733489,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,7,0.4444444444444444,0.2592592592592593,0.4180386715997181,0.0689711759927487,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,8,0.4583333333333333,0.2777777777777778,0.4387221664313577,0.1040866093200034,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+3,9,0.5416666666666666,0.3888888888888888,0.5082089139570891,0.0646629794300506,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,1,0.4097222222222222,0.2129629629629629,0.3945283628125675,0.0186395116986721,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,2,0.2604166666666667,0.0138888888888888,0.2358379524868461,0.0207974558083721,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,3,0.3576388888888889,0.1435185185185185,0.3315448469878237,0.0099573548215145,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,5,0.2465277777777778,-0.0046296296296295,0.2137369276502919,0.0162275528086195,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,6,0.3090277777777778,0.0787037037037037,0.3082987345667311,0.0137736908889965,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,7,0.3402777777777778,0.1203703703703703,0.320073786316013,0.0102670535145362,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,8,0.5,0.3333333333333333,0.4975003626118794,0.011262397411214,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+4,9,0.3993055555555556,0.199074074074074,0.3917874848977211,0.0163345044901606,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,1,0.2013888888888889,-0.0648148148148148,0.1886477911322631,0.0203210855874242,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,2,0.3194444444444444,0.0925925925925925,0.2935744810744811,0.2816678104554698,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,3,0.2395833333333333,-0.0138888888888888,0.2290301888127975,0.032375860218198,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,4,0.2534722222222222,0.0046296296296296,0.2119544890823808,0.018928465586819,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,6,0.2465277777777778,-0.0046296296296295,0.2414779169718216,0.060177988381402,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,7,0.125,-0.1666666666666667,0.120473906755907,0.013044600643619,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,8,0.15625,-0.125,0.1534594289800983,0.0123987572990501,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+5,9,0.1527777777777778,-0.1296296296296295,0.1568514146221565,0.0549140625983859,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,1,0.4027777777777778,0.2037037037037037,0.40638520570838,0.0318144111441062,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,2,0.2604166666666667,0.0138888888888888,0.2098179812465526,0.0180836929998449,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,3,0.3125,0.0833333333333333,0.2754142783251885,0.0156337520571517,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,4,0.3020833333333333,0.0694444444444444,0.2968783573113068,0.0183103893106749,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,5,0.2916666666666667,0.0555555555555555,0.2029072398190045,0.0265752502931782,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,7,0.2916666666666667,0.0555555555555555,0.2981363957137352,0.0411625531932074,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,8,0.2673611111111111,0.0231481481481481,0.2452677063201669,0.0109279216928391,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+6,9,0.34375,0.125,0.2858806963645673,0.0280501392297192,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,1,0.4756944444444444,0.3009259259259259,0.4197970175445796,0.1226936218549626,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,2,0.2395833333333333,-0.0138888888888888,0.1822893512897622,0.0243127460801777,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,3,0.5416666666666666,0.3888888888888888,0.5258431609601255,0.0609918169721723,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,4,0.2743055555555556,0.0324074074074074,0.2750925744955859,0.0132396216169479,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,5,0.2916666666666667,0.0555555555555555,0.2436207359656191,0.0221729484883024,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,6,0.3090277777777778,0.0787037037037037,0.3031595196183612,0.0218225342773238,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,8,0.4895833333333333,0.3194444444444444,0.4750464448572875,0.0688141755061545,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+7,9,0.5243055555555556,0.3657407407407407,0.5224455088790696,0.0632159227858468,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,1,0.3125,0.0833333333333333,0.2551185987134348,0.0792194009229792,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,2,0.2534722222222222,0.0046296296296296,0.2540154252130404,0.0149600785461374,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,3,0.2986111111111111,0.0648148148148147,0.2916125244233559,0.1066208359235182,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,4,0.3958333333333333,0.1944444444444444,0.3780601198279892,0.0174456207422228,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,5,0.2777777777777778,0.037037037037037,0.1865798560686739,0.0361770255758204,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,6,0.28125,0.0416666666666666,0.2597199011171203,0.0154797288463943,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,7,0.2708333333333333,0.0277777777777777,0.2011258485410094,0.0372395412536264,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+8,9,0.5694444444444444,0.4259259259259259,0.5471059872431911,0.0991406919889932,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,1,0.4270833333333333,0.2361111111111111,0.346674440150101,0.0930366556004119,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,2,0.3402777777777778,0.1203703703703703,0.3014435194374488,0.0369902549354717,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,3,0.4027777777777778,0.2037037037037037,0.384164825724104,0.0397329316570912,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,4,0.2673611111111111,0.0231481481481481,0.2431505763952082,0.0234959038818426,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,5,0.28125,0.0416666666666666,0.2614953213325284,0.0615544165546251,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,6,0.28125,0.0416666666666666,0.2412650997358242,0.0280947932025446,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,7,0.3506944444444444,0.1342592592592593,0.3451154609639244,0.03469517549857,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+9,8,0.3541666666666667,0.1388888888888888,0.3341549743819575,0.0484822444526628,Conservative Koopman aligner-r48 (original pairwise),conservative-koopman-aligner-r48-original-pairwise
+1,2,0.20833333333333334,-0.05555555555555558,0.1467298482760357,0.025211307831904752,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,3,0.5416666666666666,0.38888888888888884,0.5467099671396192,0.13294670928034197,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,4,0.2986111111111111,0.06481481481481477,0.2631000226388901,0.02011119506116207,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,5,0.2673611111111111,0.02314814814814814,0.1732851509743511,0.05380873956892939,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,6,0.28125,0.04166666666666663,0.2288014386943753,0.04281279308290743,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,7,0.4236111111111111,0.2314814814814815,0.3526262626262626,0.10705492177282395,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,8,0.5243055555555556,0.3657407407407407,0.4960595117723531,0.041353068302762766,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,9,0.4444444444444444,0.2592592592592593,0.4458511958982297,0.1958308203054524,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,1,0.2743055555555556,0.03240740740740744,0.16537067241923603,0.021990686401305127,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,3,0.1527777777777778,-0.12962962962962954,0.11296841132120258,0.043703662029861104,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,4,0.3576388888888889,0.1435185185185185,0.2985193727840787,0.02555559307929191,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,5,0.2326388888888889,-0.02314814814814814,0.20955596796920645,0.18558271364352916,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,6,0.28125,0.04166666666666663,0.25410829098003856,0.02303956223826522,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,7,0.09722222222222222,-0.20370370370370372,0.08201381772503388,0.01473042878413882,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,8,0.2951388888888889,0.06018518518518523,0.28634970878903343,0.011510722681888854,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+2,9,0.23958333333333334,-0.01388888888888884,0.20341786617998772,0.029918778891979376,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,1,0.4270833333333333,0.23611111111111116,0.3713279975421137,0.19589797168469375,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,2,0.2326388888888889,-0.02314814814814814,0.18820505978040225,0.04979709685081398,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,4,0.28125,0.04166666666666663,0.19174675096592902,0.021598877555526523,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,5,0.3055555555555556,0.07407407407407407,0.2140542271111393,0.054540776968212155,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,6,0.2638888888888889,0.01851851851851849,0.16074829327841378,0.02009961009155419,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,7,0.3090277777777778,0.07870370370370372,0.20824581013968702,0.06195017028300132,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,8,0.3993055555555556,0.19907407407407407,0.3464915038760777,0.06985007096936682,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+3,9,0.4861111111111111,0.31481481481481477,0.47095691517404215,0.09499592418273456,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,1,0.3020833333333333,0.06944444444444442,0.17871436639084637,0.02841094966274231,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,2,0.28125,0.04166666666666663,0.21840108704123504,0.0336445648500235,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,3,0.3125,0.08333333333333337,0.2340724520957079,0.02732112720993111,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,5,0.2986111111111111,0.06481481481481477,0.20239217502656456,0.024034736374884753,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,6,0.2847222222222222,0.04629629629629628,0.192640737762689,0.01387711926547126,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,7,0.3263888888888889,0.10185185185185186,0.25847009282920747,0.012819441627587445,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,8,0.3854166666666667,0.18055555555555558,0.3779274215749427,0.012952611781020492,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+4,9,0.5729166666666666,0.4305555555555556,0.5588745154054309,0.016004361431086855,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,1,0.3020833333333333,0.06944444444444442,0.22014161220043574,0.028640454753290735,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,2,0.2951388888888889,0.06018518518518523,0.2663489412168403,0.24138388258194482,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,3,0.3611111111111111,0.14814814814814814,0.30187121870691846,0.033381379589530094,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,4,0.21180555555555555,-0.05092592592592582,0.17149284819482769,0.021331577850600844,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,6,0.2222222222222222,-0.03703703703703698,0.1515685433278665,0.03772939390623727,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,7,0.1909722222222222,-0.07870370370370372,0.16442495325388193,0.02666808287816153,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,8,0.24305555555555555,-0.0092592592592593,0.1936339082402757,0.009497784761470606,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+5,9,0.2534722222222222,0.00462962962962965,0.1878527165847384,0.05026011895620672,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,1,0.3854166666666667,0.18055555555555558,0.32191861859044524,0.03782606305948725,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,2,0.2673611111111111,0.02314814814814814,0.1526785714285714,0.03811743288134483,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,3,0.3715277777777778,0.1620370370370371,0.32534249078342575,0.017418123565380014,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,4,0.3645833333333333,0.1527777777777778,0.3431092304897331,0.013742583608142081,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,5,0.2847222222222222,0.04629629629629628,0.17940716624360814,0.04797902964749179,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,7,0.2534722222222222,0.00462962962962965,0.2327188616760529,0.01139458063507707,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,8,0.3506944444444444,0.1342592592592593,0.27338666048380866,0.006647734807213241,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+6,9,0.3993055555555556,0.19907407407407407,0.3498971299877184,0.01656812673640843,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,1,0.4548611111111111,0.27314814814814814,0.3867426182955668,0.19474171590588527,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,2,0.24305555555555555,-0.0092592592592593,0.11837307152875176,0.014583218570748475,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,3,0.5381944444444444,0.3842592592592593,0.49695074335105527,0.08682055105341623,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,4,0.25,0.0,0.2116603507545725,0.01662552798348705,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,5,0.2673611111111111,0.02314814814814814,0.1778788724776422,0.020389123302858775,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,6,0.2708333333333333,0.02777777777777779,0.243958448564489,0.012989526516913437,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,8,0.4027777777777778,0.20370370370370372,0.38524584199677436,0.025752490425220737,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+7,9,0.4826388888888889,0.31018518518518523,0.48711456924723917,0.05289175369240775,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,1,0.5138888888888888,0.35185185185185186,0.45689351459123484,0.08471677720546301,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,2,0.22569444444444445,-0.03240740740740744,0.1660655832963893,0.010093581985863694,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,3,0.3333333333333333,0.11111111111111116,0.25480781057810575,0.08551554031549796,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,4,0.3854166666666667,0.18055555555555558,0.2810101927691734,0.0224008753809913,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,5,0.28125,0.04166666666666663,0.21226170736480013,0.01008170670318235,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,6,0.3402777777777778,0.12037037037037035,0.25296426820817064,0.0076182433092005925,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,7,0.28125,0.04166666666666663,0.1827259436801793,0.03071868412376928,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+8,9,0.4548611111111111,0.27314814814814814,0.42603758587407026,0.08603481272336519,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,1,0.3958333333333333,0.19444444444444442,0.2662344970400882,0.16711317541218892,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,2,0.2534722222222222,0.00462962962962965,0.210557255807358,0.038816829706911145,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,3,0.2534722222222222,0.00462962962962965,0.18666498248504754,0.08031946066842675,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,4,0.2534722222222222,0.00462962962962965,0.1082577657727185,0.009904486625921582,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,5,0.2534722222222222,0.00462962962962965,0.1139143196589559,0.05405543461885396,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,6,0.2569444444444444,0.0092592592592593,0.11965811965811966,0.012801343806885529,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,7,0.2743055555555556,0.03240740740740744,0.1513526119402985,0.05806159551016165,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+9,8,0.2881944444444444,0.05092592592592593,0.1796602787456446,0.037579087850297434,Conservative Koopman aligner-r48 (target-global refresh),conservative-koopman-aligner-r48-target-global-refresh
+1,2,0.2395833333333333,-0.0138888888888888,0.1854429236743857,0.0251589549421049,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+1,3,0.5590277777777778,0.4120370370370371,0.5503436946275803,0.1359681034758759,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+1,4,0.3020833333333333,0.0694444444444444,0.2728369191783826,0.0202129588573105,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+1,5,0.2743055555555556,0.0324074074074074,0.178383958442243,0.0542151725953716,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+1,6,0.2881944444444444,0.0509259259259259,0.238011180992313,0.0427512451537712,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+1,7,0.4027777777777778,0.2037037037037037,0.3207899343040897,0.1068904732893177,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+1,8,0.2951388888888889,0.0601851851851852,0.1879875714241039,0.0394583198796928,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+1,9,0.4236111111111111,0.2314814814814815,0.4219398536721371,0.1958411492667334,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,1,0.2569444444444444,0.0092592592592593,0.144735702267313,0.0214874772530725,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,3,0.1631944444444444,-0.1157407407407407,0.1192698215608916,0.0443505918963836,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,4,0.2986111111111111,0.0648148148148147,0.2371537884652397,0.0255009596115852,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,5,0.2361111111111111,-0.0185185185185186,0.2024260696766092,0.1854834128410119,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,6,0.2708333333333333,0.0277777777777777,0.2484094313457391,0.023153599283679,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,7,0.125,-0.1666666666666667,0.0988269794721407,0.0146829677702092,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,8,0.2604166666666667,0.0138888888888888,0.2529212957034001,0.0114397093077254,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+2,9,0.2708333333333333,0.0277777777777777,0.2233113243936196,0.0299090801455193,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,1,0.4375,0.25,0.3948572176631367,0.1962091567127311,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,2,0.2430555555555555,-0.0092592592592593,0.1477007068963262,0.049916119213831,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,4,0.2708333333333333,0.0277777777777777,0.1775067894253117,0.0217334857124123,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,5,0.2916666666666667,0.0555555555555555,0.2324817591923752,0.0545589204405158,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,6,0.2638888888888889,0.0185185185185184,0.1642202998240149,0.0199882610818029,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,7,0.28125,0.0416666666666666,0.1607433052586113,0.0614569646081522,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,8,0.3159722222222222,0.0879629629629629,0.2470743983522604,0.0677792494476797,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+3,9,0.5034722222222222,0.3379629629629629,0.5097909331586561,0.0950269278528384,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,1,0.3055555555555556,0.074074074074074,0.1898672826688815,0.0278551350659571,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,2,0.25,0.0,0.1413098900886257,0.0338717541223577,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,3,0.3055555555555556,0.074074074074074,0.2105746352810594,0.0275252733173151,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,5,0.3159722222222222,0.0879629629629629,0.222303154518823,0.0241647438992412,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,6,0.2743055555555556,0.0324074074074074,0.205316091954023,0.0139744155682127,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,7,0.34375,0.125,0.2943656590933818,0.012723080533618,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,8,0.4965277777777778,0.3287037037037037,0.4341689399492867,0.0124444273723691,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+4,9,0.5625,0.4166666666666666,0.548338429266641,0.0160340115349108,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,1,0.1840277777777778,-0.087962962962963,0.1219880837641286,0.0287242436674979,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,2,0.2986111111111111,0.0648148148148147,0.2774142182834502,0.2414965271106226,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,3,0.3541666666666667,0.1388888888888888,0.2549313909428687,0.0341931812252577,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,4,0.2430555555555555,-0.0092592592592593,0.1699319727891156,0.0214209679089908,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,6,0.2256944444444444,-0.0324074074074074,0.1261136505587747,0.0378296337988796,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,7,0.2048611111111111,-0.0601851851851851,0.1795725751140606,0.0267376920218419,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,8,0.2395833333333333,-0.0138888888888888,0.1148341650354277,0.009785932713982,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+5,9,0.2916666666666667,0.0555555555555555,0.2343458726503237,0.0503110856706485,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,1,0.3993055555555556,0.199074074074074,0.3343366508759859,0.0378257209324693,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,2,0.28125,0.0416666666666666,0.1897335061941803,0.0376543066227578,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,3,0.3680555555555556,0.1574074074074074,0.3311440383546414,0.0177926610533298,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,4,0.3506944444444444,0.1342592592592593,0.2837170470487253,0.0136715521159209,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,5,0.2604166666666667,0.0138888888888888,0.2234026369880491,0.0480461407322271,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,7,0.2291666666666666,-0.0277777777777776,0.2290577367566216,0.0113478763278831,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,8,0.3645833333333333,0.1527777777777778,0.2650159984942594,0.0065757702935494,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+6,9,0.3506944444444444,0.1342592592592593,0.298065934065934,0.0165861696017182,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,1,0.40625,0.2083333333333333,0.3528494251108209,0.1950867311622584,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,2,0.25,0.0,0.1333445434672944,0.0142791762791365,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,3,0.53125,0.375,0.4886217097403566,0.088438940174684,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,4,0.2291666666666666,-0.0277777777777776,0.2171106475517668,0.0162789209420492,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,5,0.2673611111111111,0.0231481481481481,0.1906398111452471,0.0206849634595169,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,6,0.2743055555555556,0.0324074074074074,0.2534421460892049,0.0129817539348422,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,8,0.4270833333333333,0.2361111111111111,0.3858104585544732,0.0242965841247669,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+7,9,0.4652777777777778,0.2870370370370371,0.4640957821787191,0.0526914757763224,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,1,0.4479166666666667,0.2638888888888888,0.3962646538376465,0.084713118896803,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,2,0.2118055555555555,-0.0509259259259258,0.144812643507697,0.0101210567349995,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,3,0.3854166666666667,0.1805555555555555,0.3141057988368114,0.0856282925093074,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,4,0.3472222222222222,0.1296296296296296,0.249188181296615,0.0221012720507909,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,5,0.2743055555555556,0.0324074074074074,0.1968752237096427,0.0102153996271741,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,6,0.3194444444444444,0.0925925925925925,0.2393605065511759,0.0073465452166857,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,7,0.2777777777777778,0.037037037037037,0.2072198185235239,0.0305779429935464,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+8,9,0.4375,0.25,0.405823585365915,0.085781237822695,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,1,0.3923611111111111,0.1898148148148147,0.272910444223202,0.1678667022402349,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,2,0.3402777777777778,0.1203703703703703,0.2957249608316865,0.0389701744475797,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,3,0.2951388888888889,0.0601851851851852,0.2222528933055249,0.0800323387418013,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,4,0.25,0.0,0.1005586592178771,0.0098133246416861,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,5,0.25,0.0,0.1128009703959071,0.0538216510013575,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,6,0.25,0.0,0.1067759923692127,0.0128821412372736,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,7,0.2847222222222222,0.0462962962962962,0.1639204545454545,0.0578743564431543,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48
+9,8,0.28125,0.0416666666666666,0.1612994016868979,0.0387668000862753,RBID-aware Conservative Koopman aligner-r48,rbid-aware-conservative-koopman-aligner-r48

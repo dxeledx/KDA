@@ -1,0 +1,3 @@
+Case A: high CKA but low transfer accuracy (cka>0.7 & acc<0.5)
+
+Case B: low CKA but high transfer accuracy (cka<0.4 & acc>0.65)
