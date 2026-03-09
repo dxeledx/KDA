@@ -1,0 +1,18 @@
+{
+  "d1r_run_dir": "results/ksda/exp_d1r/2026-03-08-ksda-d1r-r1",
+  "representation": {
+    "pca_rank": 48,
+    "lifting": "quadratic"
+  },
+  "best_single_action": "P2_diag_scaling_a100",
+  "best_single_accuracy_mean": 0.46141975308641975,
+  "high_overlap_actions": [],
+  "low_delta_actions": [],
+  "top3_action_families": [
+    "P2",
+    "P2",
+    "P1"
+  ],
+  "trial_safe_action_space_valid": true,
+  "elapsed_sec": 57.98910822439939
+}

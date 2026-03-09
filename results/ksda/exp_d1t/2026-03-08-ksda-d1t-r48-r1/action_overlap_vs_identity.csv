@@ -1,0 +1,13 @@
+action,overlap_vs_identity
+P1_mean_shift_a033,0.9479166666666666
+P3_low_rank_affine_a033,0.9432870370370371
+P3_low_rank_affine_a067,0.9205246913580246
+P3_low_rank_affine_a100,0.9020061728395061
+P4_supervised_subspace_a100,0.8912037037037037
+P4_supervised_subspace_a033,0.8908179012345678
+P4_supervised_subspace_a067,0.8904320987654322
+P1_mean_shift_a067,0.8834876543209877
+P2_diag_scaling_a033,0.875
+P1_mean_shift_a100,0.8186728395061729
+P2_diag_scaling_a067,0.7330246913580247
+P2_diag_scaling_a100,0.5945216049382717

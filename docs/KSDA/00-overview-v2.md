@@ -6,10 +6,12 @@
 
 > **执行状态更新**  
 > 本文档的 `D.1 / D.1+` 现已冻结为旧 Phase 1 参考。  
-> 当前真正执行的新主线已经切换为：`D0 → D1 → D2 → D3 → D4`。  
+> 当前真正执行的新主线已经切换为：`D0 → D1-T → D1.5 → D2 → D3 → D4`。  
 > `D1-R` 已完成，但它现在只保留为校准参考，正式结果见：`09-exp-d1r-results-memo.md`。  
 > `D0 / D1` 已完成，正式结果见：`15-exp-d0-d1-results-memo.md`。  
-> v3 对应执行文档见：`10-exp-d0-dyn-feasibility.md`、`11-exp-d1-dyn-local-experts.md`、`12-exp-d2-linear-performance-proxy.md`、`13-exp-d3-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`。
+> `D1-T` 已完成，正式结果见：`20-exp-d1t-results-memo.md`。  
+> `D1-T rank=48 + D1.5` 已完成，正式结果见：`21-exp-d1t-r48-d1p5-results-memo.md`。  
+> v3.1 对应执行文档见：`10-exp-d0-dyn-feasibility.md`、`16-exp-d1t-trial-safe-actions.md`、`17-exp-d1p5-causal-trialization.md`、`18-exp-d2-trial-linear-proxy.md`、`19-exp-d3-trial-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`。
 
 ---
 
@@ -578,7 +580,7 @@ action = decide_action(ρ_window)  # 离散动作
 
 ---
 
-**当前状态**: 📌 `D0` 强通过，`D1` 未通过，当前停在“重构专家集”
-**关键变化**: 已经证明动态需求存在；当前瓶颈从“要不要动态”转成“当前动作空间是否足够互补”
-**下一步**: 暂不进入 `D2/D3`，先重构 `D1` 的局部专家集
-**对应文档**: `09-exp-d1r-results-memo.md`、`10-exp-d0-dyn-feasibility.md`、`11-exp-d1-dyn-local-experts.md`、`12-exp-d2-linear-performance-proxy.md`、`13-exp-d3-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`、`15-exp-d0-d1-results-memo.md`
+**当前状态**: 📌 `D1-T rank=48` 过线，但 `D1.5` 未过线，当前停在“重构 teacher signal”
+**关键变化**: 动作空间问题已明显缓解，当前主要瓶颈从动作集转成了 `window → trial` 的因果老师信号设计
+**下一步**: 固定 `D1-T rank=48` 动作集，只重做 `D1.5` 的 teacher signal，再决定是否进入 `D2/D3`
+**对应文档**: `09-exp-d1r-results-memo.md`、`10-exp-d0-dyn-feasibility.md`、`14-exp-d4-online-dyn-alignment.md`、`15-exp-d0-d1-results-memo.md`、`16-exp-d1t-trial-safe-actions.md`、`17-exp-d1p5-causal-trialization.md`、`18-exp-d2-trial-linear-proxy.md`、`19-exp-d3-trial-operator-correction.md`、`20-exp-d1t-results-memo.md`、`21-exp-d1t-r48-d1p5-results-memo.md`

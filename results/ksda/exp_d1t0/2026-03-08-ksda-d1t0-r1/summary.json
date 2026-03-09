@@ -1,0 +1,36 @@
+{
+  "d1r_run_dir": "results/ksda/exp_d1r/2026-03-08-ksda-d1r-r1",
+  "lifting": "quadratic",
+  "pca_ranks": [
+    8,
+    16,
+    24,
+    32,
+    48,
+    64
+  ],
+  "best_by_accuracy": {
+    "best_single_action": "P2_diag_scaling_a100",
+    "best_single_accuracy": 0.46836419753086417,
+    "num_high_overlap_actions": 2,
+    "high_overlap_actions": [
+      "P1_mean_shift_a033",
+      "P3_low_rank_affine_a033"
+    ],
+    "max_overlap_vs_identity": 0.9579475308641976,
+    "mean_overlap_vs_identity": 0.8739390432098765,
+    "pca_rank": 32,
+    "lifting": "quadratic"
+  },
+  "best_by_decrowding": {
+    "best_single_action": "P2_diag_scaling_a100",
+    "best_single_accuracy": 0.46489197530864196,
+    "num_high_overlap_actions": 0,
+    "high_overlap_actions": [],
+    "max_overlap_vs_identity": 0.9429012345679012,
+    "mean_overlap_vs_identity": 0.8469328703703703,
+    "pca_rank": 64,
+    "lifting": "quadratic"
+  },
+  "elapsed_sec": 254.21327479649335
+}

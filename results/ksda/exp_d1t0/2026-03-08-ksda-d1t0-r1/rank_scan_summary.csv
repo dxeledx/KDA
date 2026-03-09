@@ -1,0 +1,7 @@
+best_single_action,best_single_accuracy,num_high_overlap_actions,high_overlap_actions,max_overlap_vs_identity,mean_overlap_vs_identity,pca_rank,lifting
+P2_diag_scaling_a100,0.46836419753086417,2,"['P1_mean_shift_a033', 'P3_low_rank_affine_a033']",0.9579475308641976,0.8739390432098765,32,quadratic
+P2_diag_scaling_a100,0.46720679012345673,0,[],0.949074074074074,0.8586033950617283,48,quadratic
+P2_diag_scaling_a100,0.46489197530864196,0,[],0.9429012345679012,0.8469328703703703,64,quadratic
+P2_diag_scaling_a100,0.4571759259259259,2,"['P1_mean_shift_a033', 'P3_low_rank_affine_a033']",0.958719135802469,0.8816229423868313,24,quadratic
+P2_diag_scaling_a100,0.4571759259259259,5,"['P4_supervised_subspace_a033', 'P4_supervised_subspace_a067', 'P4_supervised_subspace_a100', 'P3_low_rank_affine_a033', 'P1_mean_shift_a033']",0.9864969135802468,0.8912680041152264,16,quadratic
+P2_diag_scaling_a100,0.35185185185185186,4,"['P4_supervised_subspace_a033', 'P4_supervised_subspace_a067', 'P4_supervised_subspace_a100', 'P3_low_rank_affine_a033']",1.0,0.8826195987654321,8,quadratic

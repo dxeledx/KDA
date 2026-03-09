@@ -1,0 +1,25 @@
+{
+  "d1r_run_dir": "results/ksda/exp_d1r/2026-03-08-ksda-d1r-r1",
+  "representation": {
+    "pca_rank": 16,
+    "lifting": "quadratic"
+  },
+  "best_single_action": "P2_diag_scaling_a100",
+  "best_single_accuracy_mean": 0.4571759259259259,
+  "high_overlap_actions": [
+    "P4_supervised_subspace_a033",
+    "P4_supervised_subspace_a067",
+    "P4_supervised_subspace_a100",
+    "P3_low_rank_affine_a033",
+    "P1_mean_shift_a033",
+    "P3_low_rank_affine_a067"
+  ],
+  "low_delta_actions": [],
+  "top3_action_families": [
+    "P2",
+    "P2",
+    "P1"
+  ],
+  "trial_safe_action_space_valid": false,
+  "elapsed_sec": 49.248753734864295
+}
