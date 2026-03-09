@@ -14,9 +14,11 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 
 from src.alignment.euclidean import apply_alignment, compute_alignment_matrix
+from src.alignment.koopman_alignment import KoopmanFeatureProjector, build_supervised_aligner
 from src.data.loader import BCIDataLoader
 from src.data.preprocessing import Preprocessor
 from src.evaluation.metrics import cka
+from src.evaluation.rbid import compute_rbid_from_pairwise
 from src.evaluation.visualization import (
     plot_correlation_comparison,
     plot_covariance_heatmaps,
@@ -61,6 +63,59 @@ def _compute_domain_mean(
     return domain_mean
 
 
+def _compute_koopman_pairwise_transfer(
+    loader: BCIDataLoader,
+    subjects: List[int],
+    pre: Preprocessor,
+    lda_kwargs: Dict,
+    cov_eps: float,
+    mode: str,
+    pca_rank: int = 16,
+    lifting: str = "quadratic",
+) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    from src.evaluation.metrics import compute_metrics
+    from src.models.classifiers import LDA
+
+    n = len(subjects)
+    acc = np.zeros((n, n), dtype=np.float64)
+    kappa = np.zeros((n, n), dtype=np.float64)
+    f1 = np.zeros((n, n), dtype=np.float64)
+
+    for i, src in enumerate(subjects):
+        X_src_train, y_src_train = loader.load_subject(src, split="train")
+        X_src_test, _ = loader.load_subject(src, split="test")
+        X_src_train = pre.fit(X_src_train, y_src_train).transform(X_src_train)
+        X_src_test = pre.transform(X_src_test)
+        cov_src_train = compute_covariances(X_src_train, eps=cov_eps)
+        cov_src_test = compute_covariances(X_src_test, eps=cov_eps)
+        projector = KoopmanFeatureProjector(pca_rank=pca_rank, lifting=lifting).fit(cov_src_train)
+        psi_src_train = projector.transform(cov_src_train)
+        psi_src_test = projector.transform(cov_src_test)
+
+        aligner = None
+        if mode == "static-koopman-aligner":
+            aligner = build_supervised_aligner(
+                "A1", k=32, reg_lambda=1.0e-4, normalize_output=True
+            ).fit(psi_src_train, y_src_train)
+            psi_src_train = aligner.transform(psi_src_train)
+            psi_src_test = aligner.transform(psi_src_test)
+
+        lda = LDA(**lda_kwargs).fit(psi_src_train, y_src_train)
+        for j, tgt in enumerate(subjects):
+            X_tgt_test, y_tgt_test = loader.load_subject(tgt, split="test")
+            X_tgt_test = pre.transform(X_tgt_test)
+            cov_tgt_test = compute_covariances(X_tgt_test, eps=cov_eps)
+            psi_tgt_test = projector.transform(cov_tgt_test)
+            if aligner is not None:
+                psi_tgt_test = aligner.transform(psi_tgt_test)
+            y_pred = lda.predict(psi_tgt_test)
+            metrics = compute_metrics(y_tgt_test, y_pred)
+            acc[i, j] = metrics["accuracy"]
+            kappa[i, j] = metrics["kappa"]
+            f1[i, j] = metrics["f1_macro"]
+    return acc, kappa, f1
+
+
 def main() -> None:
     exp_cfg = load_yaml("configs/experiment_config.yaml")
     seed_everything(int(exp_cfg["experiment"]["seed"]))
@@ -99,17 +154,35 @@ def main() -> None:
         ("noalign", "No Alignment"),
         ("ea", "EA"),
         ("ra", "RA"),
+        ("koopman-noalign", "Koopman-noalign"),
+        ("static-koopman-aligner", "Static Koopman aligner"),
     ]
 
     correlations = []
+    rbid_rows = []
+    all_pair_rows = []
     for method, method_name in methods:
         logger.info("Computing phenomenon metrics for %s...", method_name)
         baseline_dir = Path(f"results/baselines/{method}")
         baseline_dir.mkdir(parents=True, exist_ok=True)
 
-        acc_mat = _load_transfer_matrix(baseline_dir, "accuracy")
-        kappa_mat = _load_transfer_matrix(baseline_dir, "kappa")
-        f1_mat = _load_transfer_matrix(baseline_dir, "f1_macro")
+        if method in ("koopman-noalign", "static-koopman-aligner"):
+            lda_kwargs = model_cfg["lda"]
+            acc_mat, kappa_mat, f1_mat = _compute_koopman_pairwise_transfer(
+                loader,
+                subjects,
+                pre,
+                lda_kwargs,
+                cov_eps,
+                mode=method,
+            )
+            np.save(baseline_dir / "transfer_accuracy.npy", acc_mat)
+            np.save(baseline_dir / "transfer_kappa.npy", kappa_mat)
+            np.save(baseline_dir / "transfer_f1_macro.npy", f1_mat)
+        else:
+            acc_mat = _load_transfer_matrix(baseline_dir, "accuracy")
+            kappa_mat = _load_transfer_matrix(baseline_dir, "kappa")
+            f1_mat = _load_transfer_matrix(baseline_dir, "f1_macro")
 
         domain_mean = None
         if method in ("ea", "ra"):
@@ -127,8 +200,21 @@ def main() -> None:
             X_src_train = pre.fit(X_src_train, y_src_train).transform(X_src_train)
             X_src_test = pre.transform(X_src_test)
 
-            csp = CSP(**csp_kwargs).fit(X_src_train, y_src_train)
-            F_src = csp.transform(X_src_test)
+            if method in ("koopman-noalign", "static-koopman-aligner"):
+                cov_src_train = compute_covariances(X_src_train, eps=cov_eps)
+                cov_src_test = compute_covariances(X_src_test, eps=cov_eps)
+                projector = KoopmanFeatureProjector(pca_rank=16, lifting="quadratic").fit(cov_src_train)
+                psi_src_train = projector.transform(cov_src_train)
+                F_src = projector.transform(cov_src_test)
+                aligner = None
+                if method == "static-koopman-aligner":
+                    aligner = build_supervised_aligner(
+                        "A1", k=32, reg_lambda=1.0e-4, normalize_output=True
+                    ).fit(psi_src_train, y_src_train)
+                    F_src = aligner.transform(F_src)
+            else:
+                csp = CSP(**csp_kwargs).fit(X_src_train, y_src_train)
+                F_src = csp.transform(X_src_test)
 
             for j, tgt in enumerate(subjects):
                 if src == tgt:
@@ -146,7 +232,13 @@ def main() -> None:
                 else:
                     X_eval = X_tgt_test
 
-                F_tgt = csp.transform(X_eval)
+                if method in ("koopman-noalign", "static-koopman-aligner"):
+                    cov_tgt_test = compute_covariances(X_eval, eps=cov_eps)
+                    F_tgt = projector.transform(cov_tgt_test)
+                    if aligner is not None:
+                        F_tgt = aligner.transform(F_tgt)
+                else:
+                    F_tgt = csp.transform(X_eval)
                 rep = cka(F_src, F_tgt)
                 rep_sim[i, j] = rep
 
@@ -164,11 +256,25 @@ def main() -> None:
         np.save(baseline_dir / "rep_sim.npy", rep_sim)
         pair_df = pd.DataFrame(pair_rows)
         pair_df.to_csv(baseline_dir / "pair_metrics.csv", index=False)
+        pair_df.assign(method=method).to_csv(baseline_dir / "pair_metrics_tagged.csv", index=False)
+        all_pair_rows.append(pair_df.assign(method=method_name, method_key=method))
 
         rep_values = rep_sim[~np.eye(n, dtype=bool)]
         beh_values = acc_mat[~np.eye(n, dtype=bool)]
         r, p = pearsonr(rep_values, beh_values)
         correlations.append(float(r))
+        rbid = compute_rbid_from_pairwise(rep_sim, acc_mat)
+        rbid_rows.append(
+            {
+                "method": method_name,
+                "method_key": method,
+                "pearson_r": float(r),
+                "rbid": float(rbid["rbid"]),
+                "rbid_pos": float(rbid["rbid_pos"]),
+                "rbid_neg": float(rbid["rbid_neg"]),
+                "tail_rbid": float(rbid["tail_rbid"]),
+            }
+        )
 
         plot_scatter(
             rep_values,
@@ -203,6 +309,7 @@ def main() -> None:
         (baseline_dir / "correlation.json").write_text(
             json.dumps({"r": float(r), "p_value": float(p)}, indent=2), encoding="utf-8"
         )
+        rbid["pair_df"].to_csv(baseline_dir / "rbid_pairs.csv", index=False)
 
         logger.info("%s correlation: r=%.3f p=%.3g", method_name, r, p)
 
@@ -211,6 +318,40 @@ def main() -> None:
         correlations,
         save_path="results/figures/correlation_comparison.pdf",
     )
+
+    rbid_df = pd.DataFrame(rbid_rows).sort_values("rbid", ascending=False)
+    pd.concat(all_pair_rows, ignore_index=True).to_csv("results/figures/pairwise_scores.csv", index=False)
+    rbid_df.to_csv("results/figures/rbid_method_comparison.csv", index=False)
+    rbid_df[["method", "rbid", "rbid_pos", "rbid_neg", "tail_rbid"]].to_csv(
+        "results/figures/rbid_summary.csv", index=False
+    )
+    rbid_df[["method", "rbid_pos", "rbid_neg"]].to_csv(
+        "results/figures/rbid_direction_breakdown.csv", index=False
+    )
+
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(8.0, 4.6))
+    plt.scatter(rbid_df["rbid"], rbid_df["pearson_r"], s=80, alpha=0.8)
+    for row in rbid_df.itertuples(index=False):
+        plt.annotate(row.method, (row.rbid, row.pearson_r), fontsize=9, xytext=(4, 2), textcoords="offset points")
+    plt.xlabel("RBID")
+    plt.ylabel("Pearson r")
+    plt.title("RBID vs Pearson")
+    plt.grid(alpha=0.3)
+    plt.tight_layout()
+    plt.savefig("results/figures/rbid_scatter.pdf", dpi=300)
+    plt.close()
+
+    plt.figure(figsize=(8.0, 4.6))
+    plt.bar(rbid_df["method"], rbid_df["tail_rbid"])
+    plt.ylabel("Tail-RBID")
+    plt.title("Tail-RBID across methods")
+    plt.xticks(rotation=20, ha="right")
+    plt.grid(alpha=0.3, axis="y")
+    plt.tight_layout()
+    plt.savefig("results/figures/rbid_tail_bar.pdf", dpi=300)
+    plt.close()
 
     logger.info("Done. Figures saved to results/figures/")
 

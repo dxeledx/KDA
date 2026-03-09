@@ -4,6 +4,11 @@
 **更新原因**: Exp-B.1证明问题不在尺度,在信号本身
 **核心调整**: 优先验证KCAR作为更好的信号,而非继续优化几何特征
 
+> **不可偏离的主目标**  
+> 当前 KSDA 的首要目标不是“先做复杂动态 controller”，而是：  
+> **先寻找、定义并验证一个“脑电表征—行为不一致性”的度量；再用这个度量去驱动 Koopman 特征空间中的对齐与 Koopman 算子的线性性能修正。**  
+> 如需回看完整版本，见：`22-primary-goal-mismatch-first.md`。
+
 > **执行状态更新**  
 > 本文档的 `D.1 / D.1+` 现已冻结为旧 Phase 1 参考。  
 > 当前真正执行的新主线已经切换为：`D0 → D1-T → D1.5 → D2 → D3 → D4`。  
@@ -11,7 +16,9 @@
 > `D0 / D1` 已完成，正式结果见：`15-exp-d0-d1-results-memo.md`。  
 > `D1-T` 已完成，正式结果见：`20-exp-d1t-results-memo.md`。  
 > `D1-T rank=48 + D1.5` 已完成，正式结果见：`21-exp-d1t-r48-d1p5-results-memo.md`。  
-> v3.1 对应执行文档见：`10-exp-d0-dyn-feasibility.md`、`16-exp-d1t-trial-safe-actions.md`、`17-exp-d1p5-causal-trialization.md`、`18-exp-d2-trial-linear-proxy.md`、`19-exp-d3-trial-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`。
+> `RBID / K-RBID` 已完成第一版定义与诊断，见：`23-rbid-k-rbid-metric.md`。  
+> `RBID / K-RBID` 正式结果见：`24-rbid-k-rbid-results-memo.md`。  
+> v3.1 对应执行文档见：`10-exp-d0-dyn-feasibility.md`、`16-exp-d1t-trial-safe-actions.md`、`17-exp-d1p5-causal-trialization.md`、`18-exp-d2-trial-linear-proxy.md`、`19-exp-d3-trial-operator-correction.md`、`14-exp-d4-online-dyn-alignment.md`、`22-primary-goal-mismatch-first.md`。
 
 ---
 
@@ -581,6 +588,6 @@ action = decide_action(ρ_window)  # 离散动作
 ---
 
 **当前状态**: 📌 `D1-T rank=48` 过线，但 `D1.5` 未过线，当前停在“重构 teacher signal”
-**关键变化**: 动作空间问题已明显缓解，当前主要瓶颈从动作集转成了 `window → trial` 的因果老师信号设计
-**下一步**: 固定 `D1-T rank=48` 动作集，只重做 `D1.5` 的 teacher signal，再决定是否进入 `D2/D3`
-**对应文档**: `09-exp-d1r-results-memo.md`、`10-exp-d0-dyn-feasibility.md`、`14-exp-d4-online-dyn-alignment.md`、`15-exp-d0-d1-results-memo.md`、`16-exp-d1t-trial-safe-actions.md`、`17-exp-d1p5-causal-trialization.md`、`18-exp-d2-trial-linear-proxy.md`、`19-exp-d3-trial-operator-correction.md`、`20-exp-d1t-results-memo.md`、`21-exp-d1t-r48-d1p5-results-memo.md`
+**关键变化**: `RBID` 已升级成主 mismatch 指标；`K-RBID` 第一版已显示局部诊断力，但尚不足以直接方法化
+**下一步**: 固定 `RBID` 做现象层主指标；继续重做 `D1.5` 的 teacher signal，并把 `K-RBID` 先保留在诊断层
+**对应文档**: `09-exp-d1r-results-memo.md`、`10-exp-d0-dyn-feasibility.md`、`14-exp-d4-online-dyn-alignment.md`、`15-exp-d0-d1-results-memo.md`、`16-exp-d1t-trial-safe-actions.md`、`17-exp-d1p5-causal-trialization.md`、`18-exp-d2-trial-linear-proxy.md`、`19-exp-d3-trial-operator-correction.md`、`20-exp-d1t-results-memo.md`、`21-exp-d1t-r48-d1p5-results-memo.md`、`23-rbid-k-rbid-metric.md`、`24-rbid-k-rbid-results-memo.md`

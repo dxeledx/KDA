@@ -178,6 +178,7 @@ def evaluate_trial_safe_actions(
             "transform_delta": np.asarray(transform_delta, dtype=np.float64),
             "accuracy": float(np.mean(y_pred == y_target_test)),
             "source_transformed": np.asarray(source_transformed, dtype=np.float64),
+            "target_train_transformed": np.asarray(action.transform_target_sequence(psi_target_train)[0], dtype=np.float64),
             "target_transformed": np.asarray(target_transformed, dtype=np.float64),
         }
     return results

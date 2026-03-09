@@ -1,3 +1,19 @@
+## 当前不可偏离的主目标
+
+在继续任何 controller / gate / expert 设计之前，先固定这条主目标：
+
+> **先寻找、定义并验证一个“脑电表征—行为不一致性”的度量；再用这个度量去驱动 Koopman 特征空间中的对齐，以及 Koopman 算子的线性性能修正。**
+
+也就是说：
+
+1. 先回答“问题是否存在、如何度量”
+2. 再回答“如何在 Koopman 空间中对齐”
+3. 最后才回答“如何用线性性能指标修正算子”
+
+如果某一步实验不能清楚服务于这三件事之一，就说明当前路线已经偏题。
+
+---
+
 1. 在Koopman特征空间做对齐
 
   核心思路
@@ -245,4 +261,3 @@ y_pred = LDA(ψ'_t)
 5. Performance Feedback  
 acc_recent = evaluate_recent_predictions()  
 → feed back to step 2
-

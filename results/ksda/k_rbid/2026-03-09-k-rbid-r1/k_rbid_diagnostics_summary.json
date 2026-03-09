@@ -1,0 +1,6 @@
+{
+  "d1t_run_dir": "results/ksda/exp_d1t/2026-03-08-ksda-d1t-r48-r1",
+  "window_size": 16,
+  "corr_k_rbid_vs_oracle_gain": -0.3050755596778258,
+  "elapsed_sec": 150.38641125429422
+}
